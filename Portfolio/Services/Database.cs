@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite
+using Microsoft.Data.Sqlite;
 
 namespace Portfolio.Services{
     public class Database{

@@ -25,7 +25,7 @@ namespace Portfolio.Models{
         public string Description {get;set;} = String.Empty;
         public string Repo_Url {get;set;} = String.Empty;
         public int Sort_Order {get;set;}
-        public DateTime Created_At {get;set;}
+        public DateTime Created_At {get;set;} = DateTime.UtcNow;
       }
 
 }

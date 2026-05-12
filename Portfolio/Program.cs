@@ -50,7 +50,6 @@ app.Use(async (context, next) =>
     }
     catch (Exception ex)
     {
-        Console.WriteLine("🔥 ERROR OCCURRED:");
         Console.WriteLine(ex.ToString()); // THIS IS THE IMPORTANT PART
         throw;
     }

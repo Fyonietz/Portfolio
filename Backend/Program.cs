@@ -17,6 +17,7 @@ builder.Services.Configure<Envs>(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer();
+Console.WriteLine("JWT_KEY: " + Environment.GetEnvironmentVariable("JWT_KEY"));
 builder.Services.PostConfigure<JwtBearerOptions>(options =>
 {
     options.TokenValidationParameters = new()

@@ -1,0 +1,27 @@
+
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import ProductList from '../../components/admin/ProductList.astro';
+import ProductForm from '../../components/admin/ProductForm.astro';
+import { categories, products } from '../../lib/api';
+
+const allCategories = await categories.getAll();
+const allProducts = await products.getAll();
+
+const url = Astro.url.searchParams;
+const editId = url.get('edit');
+const isNew = url.get('new');
+
+let editProduct = null;
+if (editId) {
+  editProduct = allProducts.find(p => p.id === parseInt(editId));
+}
+---
+
+<AdminLayout title="Products">
+  {isNew || editProduct ? (
+    <ProductForm categories={allCategories} product={editProduct} client:load />
+  ) : (
+    <ProductList products={allProducts} client:load />
+  )}
+</AdminLayout>

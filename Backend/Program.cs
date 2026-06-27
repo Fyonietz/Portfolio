@@ -11,6 +11,13 @@ using DotNetEnv;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
+//Cors
+builder.Services.AddCors(options=>{
+  options.AddPolicy("AllowFrontend",policy=>{
+      policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 
 // Add services to the container.
 builder.Services.Configure<Envs>(builder.Configuration);
@@ -40,6 +47,7 @@ builder.Services.AddScoped<JwtServices>();
 builder.Services.AddScoped<IPasswordService,PasswordService>();
 
 var app = builder.Build();
+app.UseCors("AllowFrontend");
 var envs = app.Services.GetRequiredService<IOptions<Envs>>().Value;
 app.Use(async (context, next) =>
 {

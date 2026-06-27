@@ -1,0 +1,191 @@
+ @import "tailwindcss";
+
+
+@layer base {
+  :root {
+    --color-bg: #111111;
+    --color-surface: #0d0d0d;
+    --color-border: #2a2a2a;
+    --color-red: #e63946;
+    --color-white: #f0f0f0;
+    --color-muted: #666666;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+  }
+}
+
+@layer components {
+  .disable{
+    display: none;
+  }
+  .section-header {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 2rem;
+    color: var(--color-red);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 1.5rem;
+  }
+
+  .card:hover {
+    border-color: #444444;
+  }
+
+  .card-active {
+    border-color: var(--color-red);
+  }
+
+  .col-label {
+    color: var(--color-red);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .text-muted {
+    color: var(--color-muted);
+  }
+
+  .text-accent {
+    color: var(--color-red);
+  }
+
+  .divider {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .tag {
+    background-color: #1a1a1a;
+    border: 1px solid var(--color-border);
+    color: var(--color-red);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 1px;
+  }
+
+  .nav-item {
+    padding: 10px 16px;
+    color: var(--color-muted);
+    font-size: 11px;
+    border-right: 1px solid var(--color-border);
+    cursor: pointer;
+  }
+
+  .nav-item:hover {
+    color: var(--color-white);
+    background-color: #1e1e1e;
+  }
+
+  .nav-item.active {
+    color: var(--color-red);
+    border-bottom: 2px solid var(--color-red);
+  }
+
+  .btn-outline {
+    border: 1px solid var(--color-red);
+    color: var(--color-red);
+    padding: 8px 18px;
+    font-size: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    border-radius: 2px;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .btn-outline:hover {
+    background-color: var(--color-red);
+    color: #000000;
+  }
+/* Text input & textarea */
+.input {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-white);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  width: 100%;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+}
+
+.input:focus {
+  border-color: var(--color-red);
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Search bar */
+.input-search {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-white);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 8px 12px 8px 32px;
+  border-radius: 2px;
+  width: 100%;
+  outline: none;
+}
+
+.input-search::placeholder {
+  color: var(--color-muted);
+}
+
+.input-search:focus {
+  border-color: var(--color-red);
+}
+
+/* File upload / photo slot */
+.input-file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a1a1a;
+  border: 1px dashed var(--color-border);
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 1.5rem;
+  gap: 6px;
+  transition: border-color 0.15s;
+}
+
+.input-file:hover {
+  border-color: var(--color-red);
+}
+
+.input-file span {
+  color: var(--color-muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.input-file input[type="file"] {
+  display: none;
+}
+}
+ body{
+   font-family: 'Inter',sans-serif;
+ }

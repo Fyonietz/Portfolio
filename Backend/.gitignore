@@ -56,4 +56,4 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 # Ignore user-uploaded profile images
-Backend/wwwroot/uploads/
+wwwroot/uploads/

@@ -11,6 +11,7 @@ using DotNetEnv;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAntiforgery();
 //Cors
 builder.Services.AddCors(options=>{
   options.AddPolicy("AllowFrontend",policy=>{
@@ -24,7 +25,6 @@ builder.Services.Configure<Envs>(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer();
-Console.WriteLine("JWT_KEY: " + Environment.GetEnvironmentVariable("JWT_KEY"));
 builder.Services.PostConfigure<JwtBearerOptions>(options =>
 {
     options.TokenValidationParameters = new()
@@ -45,8 +45,11 @@ builder.Services.AddSingleton<Database>();
 builder.Services.AddScoped<AuthServices>();
 builder.Services.AddScoped<JwtServices>();
 builder.Services.AddScoped<IPasswordService,PasswordService>();
+builder.Services.AddScoped<ProfileServices>();
 
 var app = builder.Build();
+app.UseAntiforgery();
+
 app.UseCors("AllowFrontend");
 var envs = app.Services.GetRequiredService<IOptions<Envs>>().Value;
 app.Use(async (context, next) =>
@@ -73,10 +76,11 @@ app.Use(async (context, next) =>
         );
     }
 });
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapAuth();
-
+app.MapProfile();
 app.Run();
 
 

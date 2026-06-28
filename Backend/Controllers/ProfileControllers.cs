@@ -64,6 +64,15 @@ namespace Portfolio.Controllers
                     return Results.InternalServerError(e.Message);
                 }
             });
+
+        g.MapGet("/",async (ProfileServices services)=>{
+            try{
+              var req = await services.GetAllProfile();
+              return Results.Ok(req);
+            }catch(Exception e){
+              return Results.InternalServerError(e.Message);
+            }
+            });
         }
     }
 }

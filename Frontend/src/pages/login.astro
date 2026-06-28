@@ -43,12 +43,12 @@ import "../styles/global.css"
       }),
     }
     );
-    if(!response.ok){
-      status_info.textContent = data.message || "Login Failed";
-      return;
-    }
-    const data = await response.json();
-    localStorage.setItem("token",data.token);
+  const data = await response.json();
+  if(!response.ok){
+    status_info.textContent = data.message || "Login Failed";
+    return;
+  }
+sessionStorage.setItem("token", data.token);
     status_info.textContent = "Login Successful";
       setTimeout(()=>{
         window.location.href = "/admin/dashboard";

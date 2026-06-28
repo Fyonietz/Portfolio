@@ -1,191 +1,326 @@
  @import "tailwindcss";
 
 
-@layer base {
-  :root {
-    --color-bg: #111111;
-    --color-surface: #0d0d0d;
-    --color-border: #2a2a2a;
-    --color-red: #e63946;
-    --color-white: #f0f0f0;
-    --color-muted: #666666;
-  }
+ @layer base {
+   :root {
+     --color-bg: #111111;
+     --color-surface: #0d0d0d;
+     --color-border: #2a2a2a;
+     --color-red: #e63946;
+     --color-white: #f0f0f0;
+     --color-muted: #666666;
+   }
 
-  body {
-    background-color: var(--color-bg);
-    color: var(--color-white);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-  }
-}
+   body {
+     background-color: var(--color-bg);
+     color: var(--color-white);
+     font-family: 'Share Tech Mono', monospace;
+     font-size: 12px;
+   }
+ }
 
-@layer components {
-  .disable{
-    display: none;
-  }
-  .section-header {
-    background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: 12px 2rem;
-    color: var(--color-red);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+ @layer components {
 
-  .card {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    padding: 1.5rem;
-  }
+   /* TUI ROOT */
+   .tui-root {
+     background-color: var(--color-bg);
+     color: var(--color-white);
+     font-family: 'Share Tech Mono', monospace;
+     font-size: 12px;
+     min-height: 100vh;
+     display: flex;
+     flex-direction: column;
+   }
 
-  .card:hover {
-    border-color: #444444;
-  }
+   /* TOPBAR */
+   .tui-topbar {
+     background-color: var(--color-red);
+     color: #000;
+     padding: 4px 16px;
+     display: flex;
+     align-items: center;
+     gap: 10px;
+     font-size: 11px;
+     flex-shrink: 0;
+   }
 
-  .card-active {
-    border-color: var(--color-red);
-  }
+   .tui-topbar-brand {
+     font-size: 11px;
+     letter-spacing: 1px;
+   }
 
-  .col-label {
-    color: var(--color-red);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
+   .tui-topbar-sep {
+     opacity: 0.4;
+   }
 
-  .text-muted {
-    color: var(--color-muted);
-  }
+   .tui-topbar-path {
+     opacity: 0.7;
+   }
 
-  .text-accent {
-    color: var(--color-red);
-  }
+   .tui-topbar-right {
+     margin-left: auto;
+     opacity: 0.8;
+   }
 
-  .divider {
-    border-bottom: 1px solid var(--color-border);
-  }
+   /* NAV */
+   .tui-nav {
+     background-color: var(--color-surface);
+     border-bottom: 1px solid var(--color-border);
+     display: flex;
+     align-items: stretch;
+     flex-shrink: 0;
+   }
 
-  .tag {
-    background-color: #1a1a1a;
-    border: 1px solid var(--color-border);
-    color: var(--color-red);
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 1px;
-  }
+   .tui-nav-item {
+     display: flex;
+     align-items: center;
+     gap: 6px;
+     padding: 8px 16px;
+     color: var(--color-muted);
+     font-size: 11px;
+     border-right: 1px solid var(--color-border);
+     text-decoration: none;
+     transition: background 0.1s, color 0.1s;
+   }
 
-  .nav-item {
-    padding: 10px 16px;
-    color: var(--color-muted);
-    font-size: 11px;
-    border-right: 1px solid var(--color-border);
-    cursor: pointer;
-  }
+   .tui-nav-item:hover {
+     background-color: #1a1a1a;
+     color: var(--color-white);
+   }
 
-  .nav-item:hover {
-    color: var(--color-white);
-    background-color: #1e1e1e;
-  }
+   .tui-nav-active {
+     background-color: var(--color-bg);
+     color: var(--color-white);
+     border-bottom: 2px solid var(--color-red);
+   }
 
-  .nav-item.active {
-    color: var(--color-red);
-    border-bottom: 2px solid var(--color-red);
-  }
+   .tui-nav-cmd {
+     color: var(--color-red);
+     font-size: 9px;
+     border: 1px solid var(--color-border);
+     padding: 1px 4px;
+     border-radius: 1px;
+   }
 
-  .btn-outline {
-    border: 1px solid var(--color-red);
-    color: var(--color-red);
-    padding: 8px 18px;
-    font-size: 12px;
-    font-family: 'Share Tech Mono', monospace;
-    border-radius: 2px;
-    cursor: pointer;
-    background: transparent;
-  }
+   .tui-nav-spacer {
+     flex: 1;
+   }
 
-  .btn-outline:hover {
-    background-color: var(--color-red);
-    color: #000000;
-  }
-/* Text input & textarea */
-.input {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-white);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 2px;
-  width: 100%;
-  outline: none;
-}
+   .tui-nav-logout {
+     border-right: none;
+     border-left: 1px solid var(--color-border);
+   }
 
-.input::placeholder {
-  color: var(--color-muted);
-}
+   /* MAIN */
+   .tui-main {
+     flex: 1;
+     padding: 1.5rem 2rem;
+     overflow: auto;
+   }
 
-.input:focus {
-  border-color: var(--color-red);
-}
+   /* STATUSBAR */
+   .tui-statusbar {
+     background-color: var(--color-surface);
+     border-top: 1px solid var(--color-border);
+     padding: 4px 16px;
+     display: flex;
+     align-items: center;
+     gap: 16px;
+     font-size: 10px;
+     color: var(--color-muted);
+     flex-shrink: 0;
+   }
 
-textarea.input {
-  resize: vertical;
-  min-height: 100px;
-}
+   .tui-status-item {
+     display: flex;
+     align-items: center;
+     gap: 5px;
+     background-color: #1a1a1a;
+     padding: 2px 6px;
+     border-radius: 1px;
+     border: 1px solid var(--color-border);
+     color: var(--color-white);
+   }
 
-/* Search bar */
-.input-search {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-white);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  padding: 8px 12px 8px 32px;
-  border-radius: 2px;
-  width: 100%;
-  outline: none;
-}
+   .tui-status-label {
+     color: var(--color-muted);
+   }
 
-.input-search::placeholder {
-  color: var(--color-muted);
-}
+   .tui-statusbar-right {
+     margin-left: auto;
+     color: var(--color-red);
+     letter-spacing: 1px;
+   }
 
-.input-search:focus {
-  border-color: var(--color-red);
-}
+   .disable {
+     display: none;
+   }
 
-/* File upload / photo slot */
-.input-file {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #1a1a1a;
-  border: 1px dashed var(--color-border);
-  border-radius: 2px;
-  cursor: pointer;
-  padding: 1.5rem;
-  gap: 6px;
-  transition: border-color 0.15s;
-}
+   .section-header {
+     background-color: var(--color-surface);
+     border-bottom: 1px solid var(--color-border);
+     padding: 12px 2rem;
+     color: var(--color-red);
+     font-size: 10px;
+     letter-spacing: 2px;
+     text-transform: uppercase;
+   }
 
-.input-file:hover {
-  border-color: var(--color-red);
-}
+   .card {
+     background-color: var(--color-surface);
+     border: 1px solid var(--color-border);
+     border-radius: 2px;
+     padding: 1.5rem;
+   }
 
-.input-file span {
-  color: var(--color-muted);
-  font-size: 10px;
-  letter-spacing: 1px;
-}
+   .card:hover {
+     border-color: #444444;
+   }
 
-.input-file input[type="file"] {
-  display: none;
-}
-}
- body{
-   font-family: 'Inter',sans-serif;
+   .card-active {
+     border-color: var(--color-red);
+   }
+
+   .col-label {
+     color: var(--color-red);
+     font-size: 10px;
+     letter-spacing: 2px;
+     text-transform: uppercase;
+     margin-bottom: 14px;
+   }
+
+   .text-muted {
+     color: var(--color-muted);
+   }
+
+   .text-accent {
+     color: var(--color-red);
+   }
+
+   .divider {
+     border-bottom: 1px solid var(--color-border);
+   }
+
+   .tag {
+     background-color: #1a1a1a;
+     border: 1px solid var(--color-border);
+     color: var(--color-red);
+     font-size: 9px;
+     padding: 2px 6px;
+     border-radius: 1px;
+   }
+
+   .nav-item {
+     padding: 10px 16px;
+     color: var(--color-muted);
+     font-size: 11px;
+     border-right: 1px solid var(--color-border);
+     cursor: pointer;
+   }
+
+   .nav-item:hover {
+     color: var(--color-white);
+     background-color: #1e1e1e;
+   }
+
+   .nav-item.active {
+     color: var(--color-red);
+     border-bottom: 2px solid var(--color-red);
+   }
+
+   .btn-outline {
+     border: 1px solid var(--color-red);
+     color: var(--color-red);
+     padding: 8px 18px;
+     font-size: 12px;
+     font-family: 'Share Tech Mono', monospace;
+     border-radius: 2px;
+     cursor: pointer;
+     background: transparent;
+   }
+
+   .btn-outline:hover {
+     background-color: var(--color-red);
+     color: #000000;
+   }
+
+   /* Text input & textarea */
+   .input {
+     background-color: var(--color-surface);
+     border: 1px solid var(--color-border);
+     color: var(--color-white);
+     font-family: 'Share Tech Mono', monospace;
+     font-size: 12px;
+     padding: 8px 12px;
+     border-radius: 2px;
+     width: 100%;
+     outline: none;
+   }
+
+   .input::placeholder {
+     color: var(--color-muted);
+   }
+
+   .input:focus {
+     border-color: var(--color-red);
+   }
+
+   textarea.input {
+     resize: vertical;
+     min-height: 100px;
+   }
+
+   /* Search bar */
+   .input-search {
+     background-color: var(--color-surface);
+     border: 1px solid var(--color-border);
+     color: var(--color-white);
+     font-family: 'Share Tech Mono', monospace;
+     font-size: 12px;
+     padding: 8px 12px 8px 32px;
+     border-radius: 2px;
+     width: 100%;
+     outline: none;
+   }
+
+   .input-search::placeholder {
+     color: var(--color-muted);
+   }
+
+   .input-search:focus {
+     border-color: var(--color-red);
+   }
+
+   /* File upload / photo slot */
+   .input-file {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     background-color: #1a1a1a;
+     border: 1px dashed var(--color-border);
+     border-radius: 2px;
+     cursor: pointer;
+     padding: 1.5rem;
+     gap: 6px;
+     transition: border-color 0.15s;
+   }
+
+   .input-file:hover {
+     border-color: var(--color-red);
+   }
+
+   .input-file span {
+     color: var(--color-muted);
+     font-size: 10px;
+     letter-spacing: 1px;
+   }
+
+   .input-file input[type="file"] {
+     display: none;
+   }
+ }
+
+ body {
+   font-family: 'Inter', sans-serif;
  }

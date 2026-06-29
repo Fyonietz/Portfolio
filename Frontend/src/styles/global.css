@@ -20,6 +20,168 @@
  }
 
  @layer components {
+   .tui-table-header {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     margin-bottom: 12px;
+   }
+
+   .tui-table {
+     width: 100%;
+     border-collapse: collapse;
+     font-size: 11px;
+   }
+
+   .tui-table th {
+     color: var(--color-red);
+     font-size: 10px;
+     letter-spacing: 1px;
+     text-align: left;
+     padding: 6px 10px;
+     border-bottom: 1px solid var(--color-border);
+   }
+
+   .tui-table td {
+     color: var(--color-white);
+     padding: 8px 10px;
+     border-bottom: 1px solid var(--color-border);
+   }
+
+   .tui-table tr:hover td {
+     background: #151515;
+   }
+
+   .tui-empty {
+     color: var(--color-muted);
+     text-align: center;
+     padding: 1.5rem !important;
+   }
+
+   .tui-truncate {
+     max-width: 200px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+   }
+
+   .tui-action-btn {
+     background: transparent;
+     border: 1px solid var(--color-border);
+     color: var(--color-red);
+     font-family: var(--mono);
+     font-size: 9px;
+     padding: 2px 8px;
+     border-radius: 1px;
+     cursor: pointer;
+   }
+
+   .tui-action-btn:hover {
+     border-color: var(--color-red);
+     background: #1a1a1a;
+   }
+
+   .tui-form-panel {
+     border-top: 1px solid var(--color-border);
+     margin-top: 12px;
+     padding-top: 12px;
+   }
+
+   .tui-form-header {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     margin-bottom: 12px;
+   }
+
+   .tui-form-grid {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 12px;
+   }
+
+   .tui-page {
+     display: flex;
+     flex-direction: column;
+     gap: 1rem;
+   }
+
+   .tui-page-header {
+     font-size: 11px;
+     color: var(--color-muted);
+     margin-bottom: 4px;
+   }
+
+   .tui-profile-grid {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 1rem;
+   }
+
+   .tui-avatar-wrap {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     margin-bottom: 1rem;
+   }
+
+   .tui-avatar {
+     width: 96px;
+     height: 96px;
+     border: 1px solid var(--color-border);
+     border-radius: 2px;
+     background: #1a1a1a;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     overflow: hidden;
+   }
+
+   .tui-avatar-img {
+     width: 100%;
+     height: 100%;
+     object-fit: cover;
+   }
+
+   .tui-field {
+     display: flex;
+     flex-direction: column;
+     gap: 4px;
+   }
+
+   .tui-contact-row {
+     display: grid;
+     grid-template-columns: 1fr 1fr auto;
+     gap: 6px;
+     align-items: center;
+   }
+
+   .tui-remove-btn {
+     color: var(--color-muted);
+     background: transparent;
+     border: 1px solid var(--color-border);
+     padding: 6px 8px;
+     border-radius: 2px;
+     cursor: pointer;
+     font-family: var(--mono);
+     font-size: 10px;
+   }
+
+   .tui-remove-btn:hover {
+     border-color: var(--color-red);
+     color: var(--color-red);
+   }
+
+   .tui-actions {
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     margin-top: 4px;
+   }
+
+   .disable {
+     display: none;
+   }
 
    /* TUI ROOT */
    .tui-root {

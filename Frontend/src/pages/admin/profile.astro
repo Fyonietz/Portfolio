@@ -1,0 +1,403 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+<AdminLayout>
+  <div class="tui-page">
+
+    <div class="tui-page-header">
+      <span class="text-accent">// admin</span>
+      <span class="text-muted"> > </span>
+      <span>profile</span>
+    </div>
+
+    <p class="text-accent disable text-xs mb-2" id="status"></p>
+
+    <!-- ── PROFILE TABLE ── -->
+    <div class="card mb-4">
+      <div class="tui-table-header">
+        <span class="col-label">// PROFILES</span>
+        <button class="btn-outline text-xs" id="add-profile-btn">+ NEW</button>
+      </div>
+
+      <table class="tui-table" id="profile-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>NAME</th>
+            <th>ROLE</th>
+            <th>STATUS</th>
+            <th>BIO</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="profile-tbody">
+          <tr><td colspan="6" class="tui-empty">Loading...</td></tr>
+        </tbody>
+      </table>
+
+      <!-- PROFILE FORM PANEL -->
+      <div class="tui-form-panel disable" id="profile-form">
+        <div class="tui-form-header">
+          <span class="col-label" id="profile-form-title">// NEW PROFILE</span>
+          <button class="tui-remove-btn" id="close-profile-form">✕</button>
+        </div>
+        <input type="hidden" id="profile-id" />
+        <div class="tui-form-grid">
+          <div class="tui-field">
+            <label class="col-label" for="f-name">NAME</label>
+            <input class="input" type="text" id="f-name" placeholder="> name..." />
+          </div>
+          <div class="tui-field">
+            <label class="col-label" for="f-role">ROLE TITLE</label>
+            <input class="input" type="text" id="f-role" placeholder="> role..." />
+          </div>
+          <div class="tui-field">
+            <label class="col-label" for="f-status">STATUS</label>
+            <select class="input" id="f-status">
+              <option value="Active">Active</option>
+              <option value="Busy">Busy</option>
+              <option value="Unavailable">Unavailable</option>
+            </select>
+          </div>
+          <div class="tui-field">
+            <label class="col-label" for="f-photo">PHOTO URL</label>
+            <input class="input" type="text" id="f-photo" placeholder="> /uploads/..." />
+          </div>
+          <div class="tui-field" style="grid-column: span 2">
+            <label class="col-label" for="f-bio">BIO</label>
+            <textarea class="input" id="f-bio" placeholder="> bio..."></textarea>
+          </div>
+        </div>
+        <div class="tui-actions mt-3">
+          <button class="btn-outline" id="save-profile-btn">SAVE PROFILE</button>
+          <button class="tui-remove-btn" id="delete-profile-btn">DELETE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONTACT TABLE ── -->
+    <div class="card">
+      <div class="tui-table-header">
+        <span class="col-label">// CONTACTS</span>
+        <button class="btn-outline text-xs" id="add-contact-btn">+ NEW</button>
+      </div>
+
+      <table class="tui-table" id="contact-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>PROFILE ID</th>
+            <th>PLATFORM</th>
+            <th>VALUE</th>
+            <th>ORDER</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="contact-tbody">
+          <tr><td colspan="6" class="tui-empty">Loading...</td></tr>
+        </tbody>
+      </table>
+
+      <!-- CONTACT FORM PANEL -->
+      <div class="tui-form-panel disable" id="contact-form">
+        <div class="tui-form-header">
+          <span class="col-label" id="contact-form-title">// NEW CONTACT</span>
+          <button class="tui-remove-btn" id="close-contact-form">✕</button>
+        </div>
+        <input type="hidden" id="contact-id" />
+        <div class="tui-form-grid">
+          <div class="tui-field">
+            <label class="col-label" for="c-profile-id">PROFILE ID</label>
+            <input class="input" type="number" id="c-profile-id" placeholder="> profile id..." />
+          </div>
+          <div class="tui-field">
+            <label class="col-label" for="c-platform">PLATFORM</label>
+            <input class="input" type="text" id="c-platform" placeholder="> github..." />
+          </div>
+          <div class="tui-field">
+            <label class="col-label" for="c-value">VALUE</label>
+            <input class="input" type="text" id="c-value" placeholder="> github.com/you..." />
+          </div>
+          <div class="tui-field">
+            <label class="col-label" for="c-order">SORT ORDER</label>
+            <input class="input" type="number" id="c-order" placeholder="> 0..." />
+          </div>
+        </div>
+        <div class="tui-actions mt-3">
+          <button class="btn-outline" id="save-contact-btn">SAVE CONTACT</button>
+          <button class="tui-remove-btn disable" id="delete-contact-btn">DELETE</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<script>
+  const BASE  = import.meta.env.PUBLIC_BACKEND;
+  const token = () => sessionStorage.getItem("token");
+  const headers = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token()}`,
+  });
+
+  const status = document.getElementById("status");
+  function showStatus(msg, isError = false) {
+    status.textContent = msg;
+    status.classList.remove("disable");
+    status.style.color = isError ? "var(--color-red)" : "var(--color-white)";
+    setTimeout(() => status.classList.add("disable"), 3000);
+  }
+
+  // ────────────────────────────────────────────
+  // PROFILE
+  // ────────────────────────────────────────────
+  const profileTbody     = document.getElementById("profile-tbody");
+  const profileForm      = document.getElementById("profile-form");
+  const profileFormTitle = document.getElementById("profile-form-title");
+  const profileIdEl      = document.getElementById("profile-id");
+  const fName            = document.getElementById("f-name");
+  const fRole            = document.getElementById("f-role");
+  const fStatus          = document.getElementById("f-status");
+  const fPhoto           = document.getElementById("f-photo");
+  const fBio             = document.getElementById("f-bio");
+  const deleteProfileBtn = document.getElementById("delete-profile-btn");
+
+  async function loadProfiles() {
+    profileTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">Loading...</td></tr>`;
+    try {
+      // TODO: adjust endpoint
+      const res = await fetch(`${BASE}/api/v1/profile`, { headers: headers() });
+      const data = await res.json();
+      if (!data.length) {
+        profileTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">No profiles found.</td></tr>`;
+        return;
+      }
+      profileTbody.innerHTML = data.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.role_Title}</td>
+          <td><span class="tag">${p.status}</span></td>
+          <td class="tui-truncate">${p.bio ?? "-"}</td>
+          <img src="${BASE}${p.photo_Url}" class="tui-avatar" />
+          <td>
+            <button class="tui-action-btn" onclick="editProfile(${p.id})">EDIT</button>
+            <button class="tui-remove-btn">DELETE</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch {
+      showStatus("Failed to load profiles.", true);
+    }
+  }
+
+  window.editProfile = async (id) => {
+    try {
+      // TODO: adjust endpoint
+      const res  = await fetch(`${BASE}/api/v1/profile/${id}`, { headers: headers() });
+      const data = await res.json();
+      const p    = Array.isArray(data) ? data[0] : data;
+
+      profileIdEl.value = p.id;
+      fName.value       = p.name       ?? "";
+      fRole.value       = p.role_Title ?? "";
+      fStatus.value     = p.status     ?? "Active";
+      fPhoto.value      = p.photo_Url  ?? "";
+      fBio.value        = p.bio        ?? "";
+
+      profileFormTitle.textContent = `// EDIT PROFILE #${p.id}`;
+      deleteProfileBtn.classList.remove("disable");
+      profileForm.classList.remove("disable");
+    } catch {
+      showStatus("Failed to load profile.", true);
+    }
+  };
+
+  function openNewProfile() {
+    profileIdEl.value = "";
+    fName.value = fRole.value = fPhoto.value = fBio.value = "";
+    fStatus.value = "Active";
+    profileFormTitle.textContent = "// NEW PROFILE";
+    deleteProfileBtn.classList.add("disable");
+    profileForm.classList.remove("disable");
+  }
+
+  document.getElementById("add-profile-btn").addEventListener("click", openNewProfile);
+  document.getElementById("close-profile-form").addEventListener("click", () => {
+    profileForm.classList.add("disable");
+  });
+
+  document.getElementById("save-profile-btn").addEventListener("click", async () => {
+    const id = profileIdEl.value;
+    const payload = {
+      name:       fName.value,
+      role_Title: fRole.value,
+      status:     fStatus.value,
+      photo_Url:  fPhoto.value,
+      bio:        fBio.value,
+    };
+    try {
+      // TODO: adjust endpoints + methods to match your API
+      const res = await fetch(
+        id ? `${BASE}/api/v1/profile/${id}` : `${BASE}/api/v1/profile`,
+        {
+          method: id ? "PUT" : "POST",
+          headers: headers(),
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!res.ok) throw new Error();
+      showStatus(id ? "Profile updated." : "Profile created.");
+      profileForm.classList.add("disable");
+      loadProfiles();
+    } catch {
+      showStatus("Failed to save profile.", true);
+    }
+  });
+ 
+document.getElementById("delete-profile-btn").addEventListener("click", async () => {
+  const id = profileIdEl.value;
+  if (!id || !confirm(`Delete profile #${id}?`)) return;
+
+  try {
+    const res = await fetch(`${BASE}/api/v1/profile/${id}`, {
+      method: "DELETE",
+      headers: headers(),
+    });
+    
+    if (!res.ok) throw new Error();
+    
+    showStatus("Profile deleted.");
+    profileForm.classList.add("disable");
+    loadProfiles();
+  } catch {
+    showStatus("Failed to delete.", true);
+  }
+});
+
+  // ────────────────────────────────────────────
+  // CONTACT
+  // ────────────────────────────────────────────
+  const contactTbody     = document.getElementById("contact-tbody");
+  const contactForm      = document.getElementById("contact-form");
+  const contactFormTitle = document.getElementById("contact-form-title");
+  const contactIdEl      = document.getElementById("contact-id");
+  const cProfileId       = document.getElementById("c-profile-id");
+  const cPlatform        = document.getElementById("c-platform");
+  const cValue           = document.getElementById("c-value");
+  const cOrder           = document.getElementById("c-order");
+  const deleteContactBtn = document.getElementById("delete-contact-btn");
+
+  async function loadContacts() {
+    contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">Loading...</td></tr>`;
+    try {
+      // TODO: adjust endpoint
+      const res  = await fetch(`${BASE}/api/v1/contact`, { headers: headers() });
+      const data = await res.json();
+      if (!data.length) {
+        contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">No contacts found.</td></tr>`;
+        return;
+      }
+      contactTbody.innerHTML = data.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.profile_Id ?? c.profileId}</td>
+          <td>${c.platform}</td>
+          <td>${c.value}</td>
+          <td>${c.sort_Order ?? 0}</td>
+          <td>
+            <button class="tui-action-btn" onclick="editContact(${c.id})">EDIT</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch {
+      showStatus("Failed to load contacts.", true);
+    }
+  }
+
+  window.editContact = async (id) => {
+    try {
+      // TODO: adjust endpoint
+      const res  = await fetch(`${BASE}/api/v1/contact/${id}`, { headers: headers() });
+      const data = await res.json();
+      const c    = Array.isArray(data) ? data[0] : data;
+
+      contactIdEl.value  = c.id;
+      cProfileId.value   = c.profile_Id   ?? c.profileId ?? "";
+      cPlatform.value    = c.platform     ?? "";
+      cValue.value       = c.value        ?? "";
+      cOrder.value       = c.sort_Order   ?? 0;
+
+      contactFormTitle.textContent = `// EDIT CONTACT #${c.id}`;
+      deleteContactBtn.classList.remove("disable");
+      contactForm.classList.remove("disable");
+    } catch {
+      showStatus("Failed to load contact.", true);
+    }
+  };
+
+  function openNewContact() {
+    contactIdEl.value = "";
+    cProfileId.value = cPlatform.value = cValue.value = "";
+    cOrder.value = "0";
+    contactFormTitle.textContent = "// NEW CONTACT";
+    deleteContactBtn.classList.add("disable");
+    contactForm.classList.remove("disable");
+  }
+
+  document.getElementById("add-contact-btn").addEventListener("click", openNewContact);
+  document.getElementById("close-contact-form").addEventListener("click", () => {
+    contactForm.classList.add("disable");
+  });
+
+  document.getElementById("save-contact-btn").addEventListener("click", async () => {
+    const id = contactIdEl.value;
+    const payload = {
+      // TODO: adjust keys to match your API
+      profile_Id:  parseInt(cProfileId.value),
+      platform:    cPlatform.value,
+      value:       cValue.value,
+      sort_Order:  parseInt(cOrder.value) || 0,
+    };
+    try {
+      const res = await fetch(
+        id ? `${BASE}/api/v1/contact/${id}` : `${BASE}/api/v1/contact`,
+        {
+          method: id ? "PUT" : "POST",
+          headers: headers(),
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!res.ok) throw new Error();
+      showStatus(id ? "Contact updated." : "Contact created.");
+      contactForm.classList.add("disable");
+      loadContacts();
+    } catch {
+      showStatus("Failed to save contact.", true);
+    }
+  });
+
+  deleteContactBtn.addEventListener("click", async () => {
+    const id = contactIdEl.value;
+    if (!id || !confirm(`Delete contact #${id}?`)) return;
+    try {
+      const res = await fetch(`${BASE}/api/v1/contact/${id}`, {
+        method: "DELETE",
+        headers: headers(),
+      });
+      if (!res.ok) throw new Error();
+      showStatus("Contact deleted.");
+      contactForm.classList.add("disable");
+      loadContacts();
+    } catch {
+      showStatus("Failed to delete.", true);
+    }
+  });
+
+  // ────────────────────────────────────────────
+  // INIT
+  // ────────────────────────────────────────────
+  loadProfiles();
+  loadContacts();
+</script>

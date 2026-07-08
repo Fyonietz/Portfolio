@@ -1,13 +1,65 @@
+using Backend.Services;
+using Backend.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Diagnostics;
 var builder = WebApplication.CreateBuilder(args);
+Env.Value = builder.Configuration;
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddSingleton<Database>();
+var jwtKey = builder.Configuration["Jwt:Key"]!;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
 
+builder.Services.AddAuthorization();
+builder.Services.AddSingleton<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IJWTService, JWTService>();
+
+//CRUD Services Registration
+builder.Services.AddScoped<AuthServices>();
 var app = builder.Build();
+//Logger
+app.Use(async (context, next) =>
+{
+    var sw = Stopwatch.StartNew();
 
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex);
+        throw;
+    }
+    finally
+    {
+        sw.Stop();
 
-app.UseHttpsRedirection();
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
+        Console.WriteLine(
+            $"INFO: {ip} - \"{context.Request.Method} {context.Request.Path} {context.Response.StatusCode}\" {sw.ElapsedMilliseconds}ms"
+        );
+    }
+});
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseStaticFiles();
+//CRUD Controller Registration
+app.MapAuth();
 app.Run();
-

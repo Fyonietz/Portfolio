@@ -1,0 +1,57 @@
+# .NET Core / .NET Standard / .NET
+[Oo]bj/
+[Bb]in/
+/[Tt]est[Rr]esults/
+appsettings.json
+# Visual Studio temporary files and build outputs
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet Packages and Local Restore directories
+*.nupkg
+.nuget/packages/
+.nuget/nuget.exe
+packages/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Oo]ut/
+
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+
+# Uploaded images / Media folder (Sesuaikan path folder upload di backend Anda jika ditarik spesifik)
+wwwroot/uploads/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+
+# IDEs and Editors
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

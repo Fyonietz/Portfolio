@@ -1,0 +1,53 @@
+User {
+  Id: int,
+  Username: string,
+  Email: string,
+  Password: string,     // Hash string
+  ImageUrl: string
+}
+
+CREATE TABLE User(
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Username TEXT,
+    Email TEXT,
+    Password TEXT,
+    ImageUrl TEXT
+  )
+
+Contact {
+  Id: int,
+  Platform: string,
+  Link: string,
+  ImageUrl: string
+}
+
+Skill {
+  Id: int,
+  Type: string,         // Contoh: "Frontend", "Backend", "Tools"
+  Content: string,      // Contoh: "Zig", "C", ".NET"
+  Notes: string,
+  Level: string         // Opsional
+}
+
+Project {
+  Id: int,
+  Type: string,         // Contoh: "GBA", "Web", "System"
+  Title: string,
+  Summary: string,      // Ringkasan untuk preview card
+  Content: string,      // Deskripsi lengkap
+  Link: string,
+  ImageUrl: string,
+  CreatedAt: DateTime
+}
+
+BlogPost {
+  Id: int,
+  Title: string,
+  Slug: string,
+  Summary: string,
+  Content: string,
+  ImageUrl: string,
+  IsPublished: bool,
+  CreatedAt: DateTime,
+  UpdatedAt: DateTime
+}

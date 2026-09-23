@@ -62,7 +62,33 @@ namespace Backend.Controllers
                 // Generate JWT
                 var token = jwtService.GenerateToken(user);
 
-                return Results.Ok();
+                return Results.Ok(new { Token = token, User = new { user.Id, user.Name, user.Email, user.ImageUrl } });
+            }).DisableAntiforgery();
+
+            group.MapPost("/login", async (
+                [FromBody] LoginRequest request,
+                AuthServices services,
+                IJWTService jwtService) =>
+            {
+                var user = await services.Login(request.Email, request.Password);
+                if (user == null)
+                {
+                    return Results.NotFound("Invalid credentials");
+                }
+
+                var token = jwtService.GenerateToken(user);
+
+                var response = new LoginResponse
+                {
+                    Id = user.Id,
+                    Token = token,
+                    Name = user.Name,
+                    Email = user.Email,
+                    ImageUrl = user.ImageUrl,
+                    Password = string.Empty
+                };
+
+                return Results.Ok(response);
             }).DisableAntiforgery();
         }
     }

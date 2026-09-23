@@ -6,7 +6,20 @@ using System.Text;
 using System.Diagnostics;
 var builder = WebApplication.CreateBuilder(args);
 Env.Value = builder.Configuration;
+builder.Services.AddCors(options =>
+{
 
+    options.AddPolicy("AllowWebFrontend", policy =>
+    {
+        policy.WithOrigins(
+           builder.Configuration["CORS"]
+     )
+     .AllowAnyMethod()
+     .AllowAnyHeader()
+     .AllowCredentials();
+    });
+
+});
 // Add services to the container.
 builder.Services.AddSingleton<Database>();
 var jwtKey = builder.Configuration["Jwt:Key"]!;
@@ -32,6 +45,8 @@ builder.Services.AddScoped<IJWTService, JWTService>();
 //CRUD Services Registration
 builder.Services.AddScoped<AuthServices>();
 var app = builder.Build();
+
+app.UseCors("AllowWebFrontend"); 
 //Logger
 app.Use(async (context, next) =>
 {
@@ -62,4 +77,7 @@ app.UseAuthorization();
 app.UseStaticFiles();
 //CRUD Controller Registration
 app.MapAuth();
+// Profile & Contact endpoints
+app.MapProfile();
+app.MapContact();
 app.Run();

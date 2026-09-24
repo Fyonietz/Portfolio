@@ -11,7 +11,7 @@ import "../styles/global.css"
   <body class="min-h-screen flex justify-center items-center">
     <div class="w-full max-w-sm bg-red p-8 rounded-xl shadow-lg text-center flex flex-col card my-8 gap-6">
       <h1 class="text-3xl ">Login</h1>
-      <input class="input" autocomplete="off" type="text" id="username" placeholder="Username">
+      <input class="input" autocomplete="off" type="text" id="email" placeholder="Email">
       <input class="input" type="password" id="password" placeholder="Password">
       <p class="disable text-accent" id="status"></p>
       <button class="rounded-xl btn-outline" id="loginbtn">Login</button>
@@ -21,10 +21,10 @@ import "../styles/global.css"
   const login = document.getElementById("loginbtn");
 
   login.addEventListener("click", async () => {
-    const name = document.getElementById("username").value;
+    const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const status_info = document.getElementById("status");
-    if(!name || !password){
+    if(!email || !password){
       status_info.classList.remove("disable");
       status_info.textContent = "Please Fill Required Field";
       return;
@@ -38,7 +38,7 @@ import "../styles/global.css"
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name,
+        email,
         password,
       }),
     }

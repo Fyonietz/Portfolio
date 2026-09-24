@@ -1,0 +1,772 @@
+---
+// src/pages/admin/projects.astro
+import AdminLayout from '../../layouts/AdminLayout.astro'
+---
+
+<AdminLayout>
+  <!-- BAGIAN UTAMA: BREADCRUMB & TABEL -->
+  <div id="main-view" class="view-panel">
+    <div class="section-header flex-between">
+      <div>// admin > projects <span class="cursor"></span></div>
+      <button id="btn-open-add" class="btn-outline">[INS] ADD PROJECT</button>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="search-input" placeholder="> SEARCH PROJECT TITLE OR TECH..." />
+    </div>
+
+    <div class="table-container">
+      <table class="tui-table">
+        <thead>
+          <tr>
+            <th>TITLE</th>
+            <th>TECH STACK</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="project-tbody">
+          <tr>
+            <td colspan="4" class="empty-state">LOADING PROJECTS...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PROJECT -->
+  <div id="modal-add" class="modal-overlay disable">
+    <div class="modal-content card">
+      <div class="section-header flex-between" style="border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+        <div>// admin > projects > new <span class="cursor"></span></div>
+        <button id="btn-close-add" class="btn-text-muted">[ESC] CLOSE</button>
+      </div>
+
+      <form id="form-add-project" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>TITLE</label>
+            <input type="text" name="title" required placeholder="Project Name" />
+          </div>
+          <div class="form-group">
+            <label>SLUG</label>
+            <input type="text" name="slug" required placeholder="project-name" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>SHORT DESCRIPTION</label>
+          <input type="text" name="short_desc" required placeholder="Brief summary of the project..." />
+        </div>
+
+        <div class="form-group">
+          <label>FULL DESCRIPTION</label>
+          <textarea name="full_desc" rows="4" required placeholder="Detailed explanation..."></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>TECH STACK</label>
+            <input type="text" name="tech_stack" placeholder="Zig, Astro, Linux" />
+          </div>
+          <div class="form-group">
+            <label>SORT ORDER</label>
+            <input type="number" name="sort_order" value="0" />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>REPO URL</label>
+            <input type="url" name="repo_url" placeholder="https://github.com/..." />
+          </div>
+          <div class="form-group">
+            <label>DEMO URL</label>
+            <input type="url" name="demo_url" placeholder="https://..." />
+          </div>
+        </div>
+
+        <div class="form-group upload-slot">
+          <label>PHOTOS (MULTIPLE)</label>
+          <input type="file" name="photos" multiple accept="image/*" />
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" name="published" checked />
+            <span class="checkbox-label">PUBLISHED</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-outline">[ENTER] SAVE PROJECT</button>
+          <span id="add-status" class="status-msg disable">SAVING...</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT PROJECT -->
+  <div id="modal-edit" class="modal-overlay disable">
+    <div class="modal-content card">
+      <div class="section-header flex-between" style="border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+        <div>// admin > projects > edit <span class="cursor"></span></div>
+        <button id="btn-close-edit" class="btn-text-muted">[ESC] CLOSE</button>
+      </div>
+
+      <form id="form-edit-project" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>TITLE</label>
+            <input type="text" name="title" required placeholder="Project Name" />
+          </div>
+          <div class="form-group">
+            <label>SLUG</label>
+            <input type="text" name="slug" required placeholder="project-name" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>SHORT DESCRIPTION</label>
+          <input type="text" name="short_desc" required placeholder="Brief summary of the project..." />
+        </div>
+
+        <div class="form-group">
+          <label>FULL DESCRIPTION</label>
+          <textarea name="full_desc" rows="4" required placeholder="Detailed explanation..."></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>TECH STACK</label>
+            <input type="text" name="tech_stack" placeholder="Zig, Astro, Linux" />
+          </div>
+          <div class="form-group">
+            <label>SORT ORDER</label>
+            <input type="number" name="sort_order" value="0" />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>REPO URL</label>
+            <input type="url" name="repo_url" placeholder="https://github.com/..." />
+          </div>
+          <div class="form-group">
+            <label>DEMO URL</label>
+            <input type="url" name="demo_url" placeholder="https://..." />
+          </div>
+        </div>
+
+        <div class="form-group upload-slot">
+          <label>UPDATE PHOTOS (LEAVE EMPTY TO KEEP EXISTING)</label>
+          <input type="file" name="photos" multiple accept="image/*" />
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" name="published" />
+            <span class="checkbox-label">PUBLISHED</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-outline">[ENTER] UPDATE PROJECT</button>
+          <span id="edit-status" class="status-msg disable">UPDATING...</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DETAIL PROJECT (VIEW) -->
+  <div id="modal-detail" class="modal-overlay disable">
+    <div class="modal-content card">
+      <div class="section-header flex-between" style="border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+        <div>// admin > projects > detail <span class="cursor"></span></div>
+        <button id="btn-close-detail" class="btn-text-muted">[ESC] CLOSE</button>
+      </div>
+      <div id="detail-content">
+        <!-- Konten detail dirender JS -->
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  /* === LAYOUT & UTILS === */
+  .view-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .disable {
+    display: none !important;
+  }
+  
+  /* === SECTION HEADER === */
+  .section-header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 2rem;
+    color: var(--color-red);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Kursor berkedip khas TUI */
+  .cursor {
+    display: inline-block;
+    width: 6px;
+    height: 10px;
+    background: var(--color-red);
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 4px;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* === TOOLBAR & TABLE === */
+  .toolbar {
+    padding: 1.5rem 2rem 0 2rem;
+  }
+  .toolbar input {
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 2px;
+    outline: none;
+  }
+  .toolbar input:focus {
+    border-color: var(--color-red);
+  }
+
+  .table-container {
+    padding: 1.5rem 2rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .tui-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .tui-table th {
+    color: var(--color-red);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid var(--color-border);
+    text-transform: uppercase;
+  }
+  .tui-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-white);
+    vertical-align: middle;
+  }
+  .tui-table tr:hover td {
+    background: #151515;
+  }
+  .empty-state {
+    text-align: center;
+    color: var(--color-muted);
+    padding: 2rem !important;
+  }
+
+  /* === BADGE / TAG === */
+  .tag {
+    background: #1a1a1a;
+    border: 1px solid var(--color-border);
+    color: var(--color-red);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 1px;
+    text-transform: uppercase;
+  }
+
+  /* === BUTTONS (IMPROVED READABILITY) === */
+  .btn-outline {
+    border: 1px solid var(--color-red);
+    color: var(--color-red);
+    background: transparent;
+    padding: 8px 18px;
+    font-size: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-outline:hover {
+    background: var(--color-red);
+    color: #000;
+  }
+  
+  /* Button Close di header modal */
+  .btn-text-muted {
+    background: transparent;
+    border: none;
+    color: var(--color-muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  .btn-text-muted:hover {
+    color: var(--color-red);
+  }
+
+  /* Button Action di Table (Lebih menonjol) */
+  .btn-text {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--color-white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-right: 4px;
+    border-radius: 2px;
+    transition: background 0.1s, color 0.1s;
+  }
+  .btn-text:hover {
+    background: #1f1f1f;
+    color: var(--color-red);
+    border: 1px solid #333;
+  }
+  .btn-text.danger {
+    color: var(--color-red);
+  }
+  .btn-text.danger:hover {
+    background: var(--color-red);
+    color: #000;
+    border-color: var(--color-red);
+  }
+
+  /* === MODAL OVERLAY === */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(17, 17, 17, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 2rem;
+  }
+  .modal-content.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* === FORMS === */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+  }
+  .form-group label {
+    font-size: 10px;
+    color: var(--color-muted);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .form-group input:not([type="checkbox"]):not([type="file"]),
+  .form-group textarea {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 2px;
+    outline: none;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--color-red);
+  }
+
+  .upload-slot input[type="file"] {
+    background: transparent;
+    border: 1px dashed var(--color-border);
+    padding: 1.5rem;
+    color: var(--color-muted);
+    text-align: center;
+    width: 100%;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+  }
+  .upload-slot input[type="file"]:hover {
+    border-color: #444444;
+    color: var(--color-white);
+  }
+
+  .checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .checkbox-label {
+    color: var(--color-white);
+    font-size: 12px;
+    margin-left: 8px;
+    cursor: pointer;
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .status-msg {
+    color: var(--color-red);
+    font-size: 11px;
+  }
+
+  /* === DETAIL PANEL === */
+  .detail-body {
+    font-size: 12px;
+    color: var(--color-white);
+  }
+  .detail-row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    border-bottom: 1px solid var(--color-border);
+    padding: 8px 0;
+  }
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+  .detail-label {
+    color: var(--color-muted);
+  }
+  .detail-photo {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    margin-top: 12px;
+  }
+  .link-text {
+    color: var(--color-red);
+    text-decoration: none;
+  }
+  .link-text:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<script>
+  // === CONFIG & STATE ===
+  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+  let projectsData = []; 
+  let currentEditSlug = ""; 
+
+  // === DOM ELEMENTS ===
+  const modalAdd = document.getElementById('modal-add');
+  const modalDetail = document.getElementById('modal-detail');
+  const modalEdit = document.getElementById('modal-edit');
+  
+  const btnOpenAdd = document.getElementById('btn-open-add');
+  const btnCloseAdd = document.getElementById('btn-close-add');
+  const btnCloseDetail = document.getElementById('btn-close-detail');
+  const btnCloseEdit = document.getElementById('btn-close-edit');
+  
+  const formAddProject = document.getElementById('form-add-project');
+  const formEditProject = document.getElementById('form-edit-project');
+  
+  const addStatus = document.getElementById('add-status');
+  const editStatus = document.getElementById('edit-status');
+  
+  const projectTbody = document.getElementById('project-tbody');
+  const searchInput = document.getElementById('search-input');
+  const detailContent = document.getElementById('detail-content');
+
+  // === MODAL TOGGLE LOGIC ===
+  btnOpenAdd.addEventListener('click', () => modalAdd.classList.remove('disable'));
+  btnCloseAdd.addEventListener('click', () => modalAdd.classList.add('disable'));
+  btnCloseDetail.addEventListener('click', () => modalDetail.classList.add('disable'));
+  btnCloseEdit.addEventListener('click', () => modalEdit.classList.add('disable'));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      modalAdd.classList.add('disable');
+      modalDetail.classList.add('disable');
+      modalEdit.classList.add('disable');
+    }
+  });
+
+  // === 1. FETCH & RENDER DATA (READ) ===
+  async function loadProjects() {
+    try {
+      projectTbody.innerHTML = `<tr><td colspan="4" class="empty-state">> FETCHING DATA...</td></tr>`;
+      
+      const res = await fetch(`${API_URL}/api/v1/project`);
+      if (!res.ok) throw new Error("Failed to fetch");
+      
+      projectsData = await res.json();
+      renderTable(projectsData);
+    } catch (err) {
+      console.error(err);
+      projectTbody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: var(--color-red)">> ERROR: FAILED TO LOAD PROJECTS</td></tr>`;
+    }
+  }
+
+  function renderTable(data) {
+    if (!data || data.length === 0) {
+      projectTbody.innerHTML = `<tr><td colspan="4" class="empty-state">> NO PROJECTS FOUND.</td></tr>`;
+      return;
+    }
+
+    projectTbody.innerHTML = data.map(proj => `
+      <tr>
+        <td><strong>${proj.title}</strong></td>
+        <td><span class="tag">${proj.tech_Stack || 'N/A'}</span></td>
+        <td>
+          <span class="tag" style="color: ${proj.published ? 'var(--color-white)' : 'var(--color-muted)'}; border-color: ${proj.published ? 'var(--color-border)' : '#333'}">
+            ${proj.published ? 'PUBLISHED' : 'DRAFT'}
+          </span>
+        </td>
+        <td>
+          <button class="btn-text btn-action" data-action="view" data-slug="${proj.slug}">[ VIEW ]</button>
+          <button class="btn-text btn-action" data-action="edit" data-slug="${proj.slug}">[ EDIT ]</button>
+          <button class="btn-text btn-action danger" data-action="delete" data-slug="${proj.slug}">[ DELETE ]</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // === 2. SEARCH FEATURE ===
+  searchInput.addEventListener('input', (e) => {
+    const keyword = e.target.value.toLowerCase();
+    const filtered = projectsData.filter(proj => 
+      proj.title.toLowerCase().includes(keyword) || 
+      (proj.tech_Stack && proj.tech_Stack.toLowerCase().includes(keyword))
+    );
+    renderTable(filtered);
+  });
+
+  // === 3. ACTION BUTTONS EVENT DELEGATION ===
+  projectTbody.addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('btn-action')) return;
+    
+    const action = e.target.getAttribute('data-action');
+    const slug = e.target.getAttribute('data-slug');
+    const token = sessionStorage.getItem("token");
+
+    if (action === 'view') {
+      await openDetailModal(slug);
+    } 
+    else if (action === 'delete') {
+      const confirmDel = confirm(`> WARNING: DELETE PROJECT '${slug}'? \n> THIS ACTION CANNOT BE UNDONE.`);
+      if (confirmDel) {
+        try {
+          const res = await fetch(`${API_URL}/api/v1/project/${slug}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) loadProjects();
+          else alert("> ERROR: FAILED TO DELETE");
+        } catch (err) {
+          console.error("Error deleting:", err);
+        }
+      }
+    }
+    else if (action === 'edit') {
+      await openEditModal(slug);
+    }
+  });
+
+  // === 4. DETAIL PROJECT (VIEW) ===
+  async function openDetailModal(slug) {
+    detailContent.innerHTML = `<div class="empty-state">> FETCHING DETAILS FOR ${slug}...</div>`;
+    modalDetail.classList.remove('disable');
+    try {
+      const res = await fetch(`${API_URL}/api/v1/project/${slug}`);
+      if (!res.ok) throw new Error("Data not found");
+      const data = await res.json();
+      const photoUrl = data.photos && data.photos.startsWith('/') ? `${API_URL}${data.photos}` : data.photos;
+
+      detailContent.innerHTML = `
+        <div class="detail-body">
+          <div class="detail-row"><span class="detail-label">TITLE</span> <span>${data.title}</span></div>
+          <div class="detail-row"><span class="detail-label">SLUG</span> <span>${data.slug}</span></div>
+          <div class="detail-row"><span class="detail-label">STATUS</span> <span class="tag">${data.published ? 'PUBLISHED' : 'DRAFT'}</span></div>
+          <div class="detail-row"><span class="detail-label">TECH STACK</span> <span>${data.tech_Stack || '-'}</span></div>
+          <div class="detail-row"><span class="detail-label">SORT ORDER</span> <span>${data.sort_Order}</span></div>
+          <div class="detail-row">
+            <span class="detail-label">LINKS</span> 
+            <span>
+              ${data.repo_Url ? `<a href="${data.repo_Url}" target="_blank" class="link-text">[REPO]</a>` : '-'}
+              ${data.demo_Url ? ` <a href="${data.demo_Url}" target="_blank" class="link-text">[DEMO]</a>` : ''}
+            </span>
+          </div>
+          <br/>
+          <div class="detail-row" style="display: block;">
+            <div class="detail-label" style="margin-bottom: 8px;">SHORT DESCRIPTION</div>
+            <div>${data.short_Description || '-'}</div>
+          </div>
+          <div class="detail-row" style="display: block; margin-top: 12px;">
+            <div class="detail-label" style="margin-bottom: 8px;">FULL DESCRIPTION</div>
+            <div style="white-space: pre-wrap; color: var(--color-muted); line-height: 1.5;">${data.full_Description || '-'}</div>
+          </div>
+          ${photoUrl ? `
+            <div class="detail-row" style="display: block; margin-top: 16px;">
+              <div class="detail-label">PREVIEW IMAGE</div>
+              <img src="${photoUrl}" alt="Project Photo" class="detail-photo" />
+            </div>
+          ` : ''}
+        </div>
+      `;
+    } catch (err) {
+      detailContent.innerHTML = `<div class="empty-state" style="color: var(--color-red)">> ERROR: PROJECT NOT FOUND OR SERVER ERROR</div>`;
+    }
+  }
+
+  // === 5. FETCH & POPULATE FOR EDIT ===
+  async function openEditModal(slug) {
+    currentEditSlug = slug; 
+    modalEdit.classList.remove('disable');
+    formEditProject.reset();
+    
+    try {
+      const res = await fetch(`${API_URL}/api/v1/project/${slug}`);
+      if (!res.ok) throw new Error("Data not found");
+      const data = await res.json();
+
+      formEditProject.title.value = data.title || "";
+      formEditProject.slug.value = data.slug || "";
+      formEditProject.short_desc.value = data.short_Description || "";
+      formEditProject.full_desc.value = data.full_Description || "";
+      formEditProject.tech_stack.value = data.tech_Stack || "";
+      formEditProject.repo_url.value = data.repo_Url || "";
+      formEditProject.demo_url.value = data.demo_Url || "";
+      formEditProject.sort_order.value = data.sort_Order || 0;
+      formEditProject.published.checked = data.published;
+
+    } catch (err) {
+      console.error(err);
+      alert("> ERROR: CANNOT FETCH PROJECT DETAILS FOR EDIT");
+      modalEdit.classList.add('disable');
+    }
+  }
+
+  // === 6. ADD & UPDATE LOGIC (API) ===
+  async function submitProject(formEl, method = "POST", targetSlug = "") {
+    const token = sessionStorage.getItem("token");
+    const form = new FormData();
+    
+    form.append("Title",             formEl.title.value);
+    form.append("Slug",              formEl.slug.value);
+    form.append("Short_Description", formEl.short_desc.value);
+    form.append("Full_Description",  formEl.full_desc.value);
+    form.append("Tech_Stack",        formEl.tech_stack.value);
+    form.append("Repo_Url",          formEl.repo_url.value);
+    form.append("Demo_Url",          formEl.demo_url.value);
+    form.append("Sort_Order",        formEl.sort_order.value);
+    form.append("Published",         formEl.published.checked);
+
+    const files = formEl.photos.files;
+    if (files.length > 0) {
+      for (const file of files) {
+        form.append("photos", file);
+      }
+    }
+
+    const endpoint = method === "POST" 
+      ? `${API_URL}/api/v1/project` 
+      : `${API_URL}/api/v1/project/${targetSlug}`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: method,
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+
+      const data = await res.json();
+      if (!res.ok) return { success: false, data };
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, err };
+    }
+  }
+
+  // Handler: FORM ADD
+  formAddProject.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    addStatus.textContent = "> SAVING...";
+    addStatus.classList.remove('disable');
+    
+    const result = await submitProject(e.target, "POST");
+    
+    if (result.success) {
+      addStatus.textContent = "> SUCCESS: PROJECT ADDED";
+      addStatus.style.color = "var(--color-white)";
+      setTimeout(() => {
+        modalAdd.classList.add('disable');
+        formAddProject.reset();
+        addStatus.classList.add('disable');
+        addStatus.style.color = "var(--color-red)";
+        loadProjects(); 
+      }, 1500);
+    } else {
+      addStatus.textContent = "> ERROR: SAVE FAILED";
+      setTimeout(() => addStatus.classList.add('disable'), 3000);
+    }
+  });
+
+  // Handler: FORM EDIT
+  formEditProject.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    editStatus.textContent = "> UPDATING...";
+    editStatus.classList.remove('disable');
+    
+    const result = await submitProject(e.target, "PUT", currentEditSlug);
+    
+    if (result.success) {
+      editStatus.textContent = "> SUCCESS: PROJECT UPDATED";
+      editStatus.style.color = "var(--color-white)";
+      setTimeout(() => {
+        modalEdit.classList.add('disable');
+        formEditProject.reset();
+        editStatus.classList.add('disable');
+        editStatus.style.color = "var(--color-red)";
+        loadProjects(); 
+      }, 1500);
+    } else {
+      editStatus.textContent = "> ERROR: UPDATE FAILED";
+      setTimeout(() => editStatus.classList.add('disable'), 3000);
+    }
+  });
+
+  // === INIT ===
+  document.addEventListener('DOMContentLoaded', () => {
+    loadProjects();
+  });
+</script>

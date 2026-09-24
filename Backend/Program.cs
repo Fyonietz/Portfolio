@@ -1,4 +1,5 @@
 using Backend.Services;
+using Backend.Models;
 using Backend.Controllers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -38,12 +39,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(Policies.Register);
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 
 //CRUD Services Registration
 builder.Services.AddScoped<AuthServices>();
+builder.Services.AddScoped<ProjectServices>();
 var app = builder.Build();
 
 app.UseCors("AllowWebFrontend"); 
@@ -77,6 +79,9 @@ app.UseAuthorization();
 app.UseStaticFiles();
 //CRUD Controller Registration
 app.MapAuth();
+
+//Project
+app.MapProject();
 // Profile & Contact endpoints
 app.MapProfile();
 app.MapContact();

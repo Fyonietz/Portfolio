@@ -1,4 +1,4 @@
-
+using Microsoft.AspNetCore.Authorization;
 namespace Backend.Models
 {
     public class User
@@ -32,5 +32,15 @@ namespace Backend.Models
         public string Password { get; set; } = String.Empty;
         public string Email { get; set; } = String.Empty;
         public string ImageUrl { get; set; } = String.Empty;
+    }
+    public static class Policies
+    {
+        public const string Admin = "Admin";
+        public static void Register(AuthorizationOptions options)
+        {
+            options.AddPolicy(Admin, p => p.RequireRole("Admin"));
+        }
+ 
+
     }
 }

@@ -2,31 +2,27 @@
 // src/pages/projects/[slug].astro
 import '../../styles/global.css';
 
-// 1. GENERATE STATIC PATHS UNTUK SEMUA PROJECT
-export async function getStaticPaths() {
-  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
-  try {
-    const res = await fetch(`${API_URL}/api/v1/project`);
-    if (!res.ok) throw new Error("Gagal fetch data");
-    const projects = await res.json();
-    return projects.map((project) => ({
-      params: { slug: project.slug },
-      props: { projectData: project }, // Kirim data lewat props agar tidak fetch 2x
-    }));
-  } catch (error) {
-    // Fallback darurat jika backend mati saat proses build
-    return [{ params: { slug: "fallback-project" }, props: { projectData: null } }];
-  }
-}
-
 const { slug } = Astro.params;
-const { projectData } = Astro.props;
 const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
 
-const project = projectData;
+let project = null;
+
+try {
+  // 1. Lakukan request ke API saat ada user yang mengakses halaman ini
+  const res = await fetch(`${API_URL}/api/v1/project`);
+  if (!res.ok) throw new Error("Gagal fetch data");
+  
+  const projects = await res.json();
+  
+  // 2. Cari project yang slug-nya sesuai dengan parameter di URL
+  project = projects.find((p) => p.slug === slug) || null;
+} catch (error) {
+  console.error("Error fetching project:", error);
+}
+
 const isError = !project;
 
-// 2. ROBUST DATA PARSING (Menangani camelCase dari API Contract atau fallback snake_case)
+// 3. ROBUST DATA PARSING (Tidak ada yang diubah, persis seperti kodemu)
 const photos = project && project.photos ? project.photos.split(',').map(p => p.trim()) : [];
 
 let techList = [];
@@ -44,7 +40,8 @@ const pDemoUrl = project?.demoUrl || project?.demo_Url;
 const pPublished = project?.published;
 const pSortOrder = project?.sortOrder || project?.sort_Order || 0;
 
-const getImageUrl = (url) => url.startsWith('/') ? `${API_URL}${url}` : url;
+// Menambahkan url && agar aman dari error undefined jika project tidak ada gambar
+const getImageUrl = (url) => (url && url.startsWith('/')) ? `${API_URL}${url}` : url;
 ---
 
 <html lang="en">

@@ -1,0 +1,294 @@
+---
+// src/pages/admin/achievements.astro
+import AdminLayout from "../../layouts/AdminLayout.astro";
+const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+---
+
+<AdminLayout title="SYS_ADMIN | Achievements">
+  
+  <main class="flex flex-col bg-[var(--color-bg)] h-screen overflow-hidden w-full">
+    
+    <header class="border-b border-[var(--color-border)] p-6 bg-[var(--color-surface)] flex justify-between items-center shrink-0">
+      <div class="text-[11px] text-[var(--color-muted)] tracking-widest uppercase">
+        ~/root/admin/achievements <span class="cursor"></span>
+      </div>
+    </header>
+
+    <div class="p-6 border-b border-[var(--color-border)] flex justify-between items-center shrink-0">
+      <div class="flex gap-4 items-center">
+        <span class="text-[var(--color-red)]">></span>
+        <input type="text" id="search-input" placeholder="SEARCH_ACHIEVEMENTS..." class="w-[300px] border-none bg-transparent outline-none text-[var(--color-white)] placeholder:text-[var(--color-muted)] text-[13px]" />
+      </div>
+      <button id="btn-create" class="btn-primary text-[12px]">+ NEW_ACHIEVEMENT</button>
+    </div>
+
+    <div class="p-6 overflow-y-auto flex-1">
+      <table class="w-full text-[13px] border-collapse">
+        <thead>
+          <tr>
+            <th class="w-[50px] border-b border-[var(--color-border)] p-3 text-left text-[var(--color-muted)] font-normal uppercase tracking-[1px] text-[11px]">ID</th>
+            <th class="w-[200px] border-b border-[var(--color-border)] p-3 text-left text-[var(--color-muted)] font-normal uppercase tracking-[1px] text-[11px]">TITLE</th>
+            <th class="w-[120px] border-b border-[var(--color-border)] p-3 text-left text-[var(--color-muted)] font-normal uppercase tracking-[1px] text-[11px]">DATE</th>
+            <th class="border-b border-[var(--color-border)] p-3 text-left text-[var(--color-muted)] font-normal uppercase tracking-[1px] text-[11px]">DESCRIPTION</th>
+            <th class="w-[80px] border-b border-[var(--color-border)] p-3 text-left text-[var(--color-muted)] font-normal uppercase tracking-[1px] text-[11px]">ORDER</th>
+            <th class="w-[150px] border-b border-[var(--color-border)] p-3 text-left text-[var(--color-muted)] font-normal uppercase tracking-[1px] text-[11px]">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="6" class="text-center text-[var(--color-muted)] py-8">> FETCHING_DATA...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL FORM (FormData / Multipart) -->
+  <div id="modal-form" class="modal-overlay disable">
+    <div class="modal-box">
+      <div class="flex justify-between items-center border-b border-[var(--color-border)] pb-4 mb-6">
+        <div id="modal-title" class="text-[var(--color-red)] text-[12px] uppercase tracking-widest font-bold">
+          // CREATE_ACHIEVEMENT <span class="cursor"></span>
+        </div>
+        <button type="button" id="btn-close-modal" class="text-[var(--color-muted)] hover:text-[var(--color-white)]">[X]</button>
+      </div>
+      
+      <form id="achievement-form" class="flex flex-col gap-4">
+        <input type="hidden" id="a-id" />
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] text-[var(--color-muted)] mb-2 uppercase">TITLE <span class="text-[var(--color-red)]">*</span></label>
+            <input type="text" id="a-title" class="tui-input" required />
+          </div>
+          <div>
+            <label class="block text-[11px] text-[var(--color-muted)] mb-2 uppercase">SLUG <span class="text-[var(--color-red)]">*</span></label>
+            <input type="text" id="a-slug" class="tui-input" required placeholder="first-hackathon" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] text-[var(--color-muted)] mb-2 uppercase">ACHIEVED_AT (Date)</label>
+            <input type="date" id="a-date" class="tui-input" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-[var(--color-muted)] mb-2 uppercase">SORT_ORDER</label>
+            <input type="number" id="a-order" class="tui-input" value="0" />
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-[11px] text-[var(--color-muted)] mb-2 uppercase">DESCRIPTION <span class="text-[var(--color-red)]">*</span></label>
+          <textarea id="a-desc" class="tui-input" rows="3" required></textarea>
+        </div>
+
+        <!-- UPLOAD PHOTO -->
+        <div>
+          <label class="block text-[11px] text-[var(--color-muted)] mb-2 uppercase">PHOTO (OPTIONAL)</label>
+          <input type="file" id="a-photo" class="tui-file border border-dashed border-[var(--color-border)] w-full p-4 text-[12px] text-[var(--color-muted)]" accept="image/*" />
+        </div>
+
+        <div class="flex justify-end gap-4 mt-2 pt-6 border-t border-[var(--color-border)]">
+          <button type="button" id="btn-cancel" class="btn-outline">CANCEL</button>
+          <button type="submit" class="btn-primary">EXECUTE_SAVE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="sys-status" class="fixed top-[20px] right-[20px] bg-[var(--color-surface)] border border-[var(--color-red)] text-[var(--color-white)] p-[10px_20px] text-[11px] uppercase z-[100] hidden shadow-[0_0_10px_rgba(230,57,70,0.2)]">
+    > STATUS: READY
+  </div>
+
+  <style>
+    .tui-input { background-color: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-white); padding: 10px; font-family: inherit; font-size: 13px; width: 100%; }
+    .tui-input:focus { outline: none; border-color: var(--color-red); }
+    .btn-primary { background-color: var(--color-red); color: black; border: 1px solid var(--color-red); padding: 10px 20px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
+    .btn-primary:hover { background-color: transparent; color: var(--color-red); }
+    .btn-outline { background-color: transparent; color: var(--color-white); border: 1px solid var(--color-border); padding: 10px 20px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
+    .btn-outline:hover { border-color: var(--color-white); background: var(--color-surface); }
+    .btn-text { background: transparent; border: none; color: var(--color-red); padding: 0; font-weight: bold; cursor: pointer; }
+    .btn-text:hover { color: var(--color-white); text-decoration: underline; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(17, 17, 17, 0.9); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 50; }
+    .modal-overlay.disable { display: none; }
+    .modal-box { background: var(--color-surface); border: 1px solid var(--color-border); width: 100%; max-w: 700px; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+    .cursor { display: inline-block; width: 10px; height: 18px; background: var(--color-red); animation: blink 1s infinite; vertical-align: middle; margin-left: 8px;}
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    tbody tr:hover td { background-color: var(--color-surface); }
+    td { border-bottom: 1px solid var(--color-border); padding: 12px; vertical-align: top; }
+  </style>
+
+  <script define:vars={{ API_URL }}>
+    // Perbaikan token: Menggunakan sessionStorage (seperti di profile.astro)
+    const token = () => sessionStorage.getItem("token");
+    if (!token()) window.location.href = '/admin/login';
+
+    const sysStatus = document.getElementById('sys-status');
+    const tableBody = document.getElementById('table-body');
+    const searchInput = document.getElementById('search-input');
+    const modal = document.getElementById('modal-form');
+    const form = document.getElementById('achievement-form');
+    const modalTitle = document.getElementById('modal-title');
+    
+    let achievements = [];
+
+    // Header FormData (TANPA Content-Type)
+    const formHeaders = () => ({
+      'Authorization': `Bearer ${token()}`
+    });
+
+    function showStatus(msg, isError = false) {
+      if(!sysStatus) return;
+      sysStatus.innerHTML = `> ${msg}`;
+      sysStatus.style.borderColor = isError ? 'var(--color-red)' : 'var(--color-muted)';
+      sysStatus.style.display = 'block';
+      setTimeout(() => { sysStatus.style.display = 'none'; }, 3000);
+    }
+
+    async function loadData() {
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-[var(--color-muted)] py-8">> INITIATING_NETWORK_REQUEST...</td></tr>`;
+      try {
+        const res = await fetch(`${API_URL}/api/v1/achievement`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        achievements = data.sort((a, b) => (a.sortOrder || a.sort_Order || 0) - (b.sortOrder || b.sort_Order || 0));
+        renderTable(achievements);
+      } catch (err) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-[var(--color-red)] py-8">> FATAL_ERROR: UNABLE TO FETCH DATA.</td></tr>`;
+      }
+    }
+
+    function renderTable(data) {
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-[var(--color-muted)] py-8">> NO_RECORDS_FOUND.</td></tr>`;
+        return;
+      }
+      tableBody.innerHTML = data.map(a => {
+        const dateStr = a.achievedAt || a.achieved_At;
+        const displayDate = dateStr ? new Date(dateStr).toLocaleDateString('en-CA') : '-';
+        return `
+          <tr>
+            <td class="text-[var(--color-muted)]">#${a.id}</td>
+            <td class="font-bold text-[var(--color-white)]">
+              <div>${a.title}</div>
+              <div class="text-[var(--color-muted)] text-[11px] font-normal font-mono uppercase">${a.slug}</div>
+            </td>
+            <td>${displayDate}</td>
+            <td class="text-[var(--color-muted)] truncate max-w-[200px]" title="${a.description}">${a.description}</td>
+            <td>${a.sortOrder || a.sort_Order || 0}</td>
+            <td>
+              <div class="flex gap-3">
+                <button class="btn-text btn-edit" data-id="${a.id}">[EDIT]</button>
+                <button class="btn-text btn-del" data-id="${a.id}">[DEL]</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = achievements.filter(a => 
+        a.title.toLowerCase().includes(query) || 
+        a.description.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    });
+
+    function openModal(isEdit = false, data = null) {
+      form.reset();
+      document.getElementById('a-id').value = '';
+      document.getElementById('a-photo').value = ''; // Clear file input
+      modalTitle.innerHTML = `// ${isEdit ? 'EDIT' : 'CREATE'}_ACHIEVEMENT <span class="cursor"></span>`;
+      
+      if (isEdit && data) {
+        document.getElementById('a-id').value = data.id;
+        document.getElementById('a-title').value = data.title;
+        document.getElementById('a-slug').value = data.slug || '';
+        document.getElementById('a-desc').value = data.description;
+        document.getElementById('a-order').value = data.sortOrder || data.sort_Order || 0;
+        
+        const dateStr = data.achievedAt || data.achieved_At;
+        if (dateStr) {
+          document.getElementById('a-date').value = new Date(dateStr).toISOString().split('T')[0];
+        }
+      }
+      modal.classList.remove('disable');
+    }
+
+    function closeModal() { modal.classList.add('disable'); }
+
+    document.getElementById('btn-create').addEventListener('click', () => openModal(false));
+    document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+    document.getElementById('btn-cancel').addEventListener('click', closeModal);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('a-id').value;
+      const method = id ? 'PUT' : 'POST';
+      // Hapus Trailing Slash /
+      const url = id ? `${API_URL}/api/v1/achievement/${id}` : `${API_URL}/api/v1/achievement`;
+      
+      // Menggunakan FormData karena API update ke multipart/form-data
+      const formData = new FormData();
+      formData.append("Title", document.getElementById('a-title').value);
+      formData.append("Slug", document.getElementById('a-slug').value);
+      formData.append("Description", document.getElementById('a-desc').value);
+      
+      const dateVal = document.getElementById('a-date').value;
+      if (dateVal) formData.append("Achieved_At", dateVal);
+      
+      formData.append("Sort_Order", document.getElementById('a-order').value || "0");
+
+      const fileInput = document.getElementById('a-photo');
+      if (fileInput.files.length > 0) {
+        formData.append("Photo", fileInput.files[0]);
+      }
+
+      try {
+        showStatus("UPLOADING_DATA...");
+        const res = await fetch(url, { 
+          method, 
+          headers: formHeaders(), // Tanpa content-type
+          body: formData 
+        });
+        if (!res.ok) throw new Error();
+        showStatus(id ? "DATA_UPDATED_SUCCESSFULLY" : "DATA_CREATED_SUCCESSFULLY");
+        closeModal();
+        loadData();
+      } catch (err) {
+        showStatus("ERROR: TRANSACTION_FAILED", true);
+      }
+    });
+
+    tableBody.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      
+      if (btn.classList.contains('btn-edit')) {
+        const item = achievements.find(a => a.id.toString() === id);
+        if (item) openModal(true, item);
+      }
+      
+      if (btn.classList.contains('btn-del')) {
+        if (confirm(`>> WARNING: DATA DESTRUCTION INITIATED.\nAre you sure you want to permanently delete achievement #${id}?`)) {
+          try {
+            showStatus("DELETING_RECORD...");
+            const res = await fetch(`${API_URL}/api/v1/achievement/${id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${token()}` }
+            });
+            if (!res.ok) throw new Error();
+            showStatus("RECORD_DESTROYED");
+            loadData();
+          } catch {
+            showStatus("ERROR: DELETION_FAILED", true);
+          }
+        }
+      }
+    });
+
+    loadData();
+  </script>
+</AdminLayout>

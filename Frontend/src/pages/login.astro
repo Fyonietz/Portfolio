@@ -9,11 +9,11 @@ import "../styles/global.css"
     <title></title>
   </head>
   <body class="min-h-screen flex justify-center items-center">
-    <div class="w-full max-w-sm bg-red p-8 rounded-xl shadow-lg text-center flex flex-col card my-8 gap-6">
+    <div class="card w-full max-w-sm p-8 rounded-xl shadow-lg text-center flex flex-col my-8 gap-6">
       <h1 class="text-3xl ">Login</h1>
       <input class="input" autocomplete="off" type="text" id="email" placeholder="Email">
       <input class="input" type="password" id="password" placeholder="Password">
-      <p class="disable text-accent" id="status"></p>
+      <p class="hidden text-accent" id="status"></p>
       <button class="rounded-xl btn-outline" id="loginbtn">Login</button>
     </div>
   </body>
@@ -25,11 +25,11 @@ import "../styles/global.css"
     const password = document.getElementById("password").value;
     const status_info = document.getElementById("status");
     if(!email || !password){
-      status_info.classList.remove("disable");
+      status_info.classList.remove("hidden");
       status_info.textContent = "Please Fill Required Field";
       return;
     }
-    status_info.classList.remove("disable");
+    status_info.classList.remove("hidden");
     status_info.textContent = "Logging in..";
     try{
      const response = await fetch(`${import.meta.env.PUBLIC_BACKEND}/api/v1/auth/login`, {

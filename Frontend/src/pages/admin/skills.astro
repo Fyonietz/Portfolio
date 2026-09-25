@@ -1,0 +1,439 @@
+---
+// src/pages/admin/skills.astro
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout>
+  <div id="main-view" class="flex flex-col h-full pb-8">
+    
+    <!-- SECTION HEADER -->
+    <div class="section-header flex items-center justify-between border-b border-[var(--color-border)] px-8 py-4 bg-[var(--color-surface)]">
+      <div class="text-[var(--color-red)] text-[11px] uppercase tracking-widest">
+        // admin > tech stack & skills 
+        <span class="inline-block w-[6px] h-[11px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span>
+      </div>
+      <span id="global-status" class="text-[11px] font-bold text-[var(--color-white)] hidden"></span>
+    </div>
+
+    <!-- ==========================================
+         1. TECH STACK SECTION (MULTIPART / UPLOAD)
+         ========================================== -->
+    <div class="px-8 pt-8 pb-4 flex items-center justify-between">
+      <div class="text-muted text-[11px] uppercase tracking-wider">// REGISTERED_TECH_STACK</div>
+      <button id="btn-open-tech" class="btn-outline text-[12px] px-4 py-2">[INS] ADD TECH</button>
+    </div>
+
+    <div class="px-8 overflow-x-auto mb-8">
+      <table class="tui-table w-full text-left">
+        <thead>
+          <tr>
+            <th class="w-[60px]">ID</th>
+            <th class="w-[80px]">ICON</th>
+            <th>NAME</th>
+            <th>ORDER</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="tech-tbody">
+          <tr><td colspan="5" class="tui-empty">> LOADING TECH STACK...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ==========================================
+         2. SKILLS SECTION (JSON)
+         ========================================== -->
+    <div class="px-8 pt-4 pb-4 flex items-center justify-between border-t border-[var(--color-border)]">
+      <div class="text-muted text-[11px] uppercase tracking-wider">// SYSTEM_SKILLS</div>
+      <button id="btn-open-skill" class="btn-outline text-[12px] px-4 py-2">[INS] ADD SKILL</button>
+    </div>
+
+    <div class="px-8 overflow-x-auto mb-8">
+      <table class="tui-table w-full text-left">
+        <thead>
+          <tr>
+            <th class="w-[60px]">ID</th>
+            <th>NAME</th>
+            <th>CATEGORY</th>
+            <th>LEVEL</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="skill-tbody">
+          <tr><td colspan="6" class="tui-empty">> LOADING SKILLS...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       MODAL 1: TECH STACK FORM (FormData)
+       ============================================== -->
+  <div id="modal-tech" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[500px] max-h-[90vh] overflow-y-auto p-7 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2px]">
+      <div class="flex items-center justify-between border-b border-[var(--color-border)] pb-4 mb-6">
+        <div id="tech-form-title" class="text-[var(--color-red)] text-[11px] tracking-widest">// admin > tech > new</div>
+        <button id="btn-close-tech" class="bg-transparent border-0 text-muted text-[11px] cursor-pointer tracking-[1px] hover:text-[var(--color-red)]">[ESC] CLOSE</button>
+      </div>
+
+      <form id="form-tech" autocomplete="off">
+        <input type="hidden" id="t-id" />
+
+        <div class="flex flex-col mb-4">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">NAME</label>
+          <input type="text" id="t-name" required placeholder="> React" class="input" />
+        </div>
+
+        <div class="flex flex-col mb-4">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">SORT ORDER</label>
+          <input type="number" id="t-order" required placeholder="> 1" value="0" class="input" />
+        </div>
+
+        <div class="flex flex-col mb-4 mt-6">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">ICON (.SVG / .PNG)</label>
+          <input type="file" id="t-icon" accept="image/*,.svg" class="bg-transparent border border-dashed border-[var(--color-border)] p-6 text-muted text-center w-full cursor-pointer text-xs hover:border-[#555] hover:text-[var(--color-white)]" />
+        </div>
+
+        <div class="flex items-center mt-6 pt-6 border-t border-[var(--color-border)]">
+          <button type="submit" class="btn-outline w-full">[ENTER] SAVE TECH</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       MODAL 2: SKILL FORM (JSON)
+       ============================================== -->
+  <div id="modal-skill" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-7 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[2px]">
+      <div class="flex items-center justify-between border-b border-[var(--color-border)] pb-4 mb-6">
+        <div id="skill-form-title" class="text-[var(--color-red)] text-[11px] tracking-widest">// admin > skill > new</div>
+        <button id="btn-close-skill" class="bg-transparent border-0 text-muted text-[11px] cursor-pointer tracking-[1px] hover:text-[var(--color-red)]">[ESC] CLOSE</button>
+      </div>
+
+      <form id="form-skill" autocomplete="off" class="grid grid-cols-2 gap-4">
+        <input type="hidden" id="s-id" />
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">NAME</label>
+          <input type="text" id="s-name" required placeholder="> Zig" class="input" />
+        </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">CATEGORY</label>
+          <input type="text" id="s-category" required placeholder="> Low-Level" class="input" />
+        </div>
+
+        <div class="flex flex-col col-span-2">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">DESCRIPTION</label>
+          <input type="text" id="s-desc" required placeholder="> Systems programming language" class="input" />
+        </div>
+
+        <div class="flex flex-col col-span-2">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">ICON URL PATH</label>
+          <input type="text" id="s-icon" placeholder="> /uploads/icon.svg" class="input" />
+        </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">LEVEL (0-100)</label>
+          <input type="number" id="s-level" required placeholder="> 90" min="0" max="100" class="input" />
+        </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">SORT ORDER</label>
+          <input type="number" id="s-order" required placeholder="> 0" value="0" class="input" />
+        </div>
+
+        <div class="flex flex-col col-span-2 mt-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="s-published" class="w-4 h-4" checked />
+            <span class="text-[11px] text-muted tracking-[1px]">PUBLISHED</span>
+          </label>
+        </div>
+
+        <div class="flex items-center mt-4 pt-6 border-t border-[var(--color-border)] col-span-2">
+          <button type="submit" class="btn-outline w-full">[ENTER] SAVE SKILL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+  const TECH_ENDPOINT = `${API_URL}/api/v1/tech-stack`;
+  const SKILL_ENDPOINT = `${API_URL}/api/v1/skill`;
+
+  const token = () => sessionStorage.getItem("token") || "";
+
+  const jsonHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token()}`,
+  });
+
+  const formHeaders = () => ({
+    Authorization: `Bearer ${token()}`,
+  });
+
+  // === STATUS UTILITY ===
+  const globalStatus = document.getElementById("global-status");
+  function showStatus(msg, isError = false) {
+    globalStatus.textContent = `> ${msg}`;
+    globalStatus.classList.remove("hidden");
+    globalStatus.classList.toggle("text-[var(--color-white)]", !isError);
+    globalStatus.classList.toggle("text-[var(--color-red)]", isError);
+    setTimeout(() => globalStatus.classList.add("hidden"), 3500);
+  }
+
+  // === MODAL TOGGLE & KEYBINDS ===
+  const modalTech = document.getElementById('modal-tech');
+  const modalSkill = document.getElementById('modal-skill');
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      modalTech.classList.add('hidden');
+      modalSkill.classList.add('hidden');
+    }
+  });
+
+  document.getElementById("btn-close-tech").addEventListener("click", () => modalTech.classList.add("hidden"));
+  document.getElementById("btn-close-skill").addEventListener("click", () => modalSkill.classList.add("hidden"));
+
+
+  /* ==========================================================================
+     1. TECH STACK LOGIC (MULTIPART FormData)
+     ========================================================================== */
+  const techTbody = document.getElementById("tech-tbody");
+  const formTech = document.getElementById('form-tech');
+  const techFormTitle = document.getElementById('tech-form-title');
+
+  async function loadTechStack() {
+    techTbody.innerHTML = `<tr><td colspan="5" class="tui-empty">> FETCHING TECH STACK...</td></tr>`;
+    try {
+      const res = await fetch(TECH_ENDPOINT);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      
+      if (!data.length) {
+        techTbody.innerHTML = `<tr><td colspan="5" class="tui-empty">> NO TECH STACK FOUND.</td></tr>`;
+        return;
+      }
+      
+      data.sort((a, b) => a.sort_Order - b.sort_Order);
+      
+      techTbody.innerHTML = data.map(t => {
+        const iconSrc = t.icon_Url ? (t.icon_Url.startsWith('/') ? `${API_URL}${t.icon_Url}` : t.icon_Url) : '';
+        return `
+          <tr>
+            <td><strong>${t.id}</strong></td>
+            <td>
+              ${iconSrc ? `<img src="${iconSrc}" class="w-8 h-8 object-contain bg-[var(--color-bg)] border border-[var(--color-border)] p-1 rounded-[2px]" alt="${t.name}" />` : `<span class="text-[10px] text-muted">N/A</span>`}
+            </td>
+            <td class="font-bold text-[var(--color-white)]">${t.name}</td>
+            <td>${t.sort_Order ?? 0}</td>
+            <td>
+              <button class="tui-action-btn btn-tech-edit" data-id="${t.id}">[ EDIT ]</button>
+              <button class="tui-action-btn btn-tech-del hover:bg-[var(--color-red)] hover:text-black hover:border-[var(--color-red)]" data-id="${t.id}">[ DELETE ]</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    } catch {
+      techTbody.innerHTML = `<tr><td colspan="5" class="tui-empty text-[var(--color-red)]">> ERROR LOADING TECH STACK.</td></tr>`;
+    }
+  }
+
+  // EVENT DELEGATION TECH STACK
+  techTbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+
+    if (btn.classList.contains('btn-tech-edit')) {
+      try {
+        const res = await fetch(`${TECH_ENDPOINT}/${id}`);
+        const data = await res.json();
+        const t = Array.isArray(data) ? data[0] : data;
+
+        document.getElementById('t-id').value = t.id;
+        document.getElementById('t-name').value = t.name ?? "";
+        document.getElementById('t-order').value = t.sort_Order ?? 0;
+        document.getElementById('t-icon').value = ""; // Clear file
+
+        techFormTitle.textContent = `// admin > tech > edit #${t.id}`;
+        modalTech.classList.remove('hidden');
+      } catch { showStatus("FAILED TO FETCH TECH", true); }
+    }
+
+    if (btn.classList.contains('btn-tech-del')) {
+      if (confirm(`> WARNING: DELETE TECH MODULE #${id}?`)) {
+        try {
+          const res = await fetch(`${TECH_ENDPOINT}/${id}`, { method: "DELETE", headers: jsonHeaders() });
+          if (!res.ok) throw new Error();
+          showStatus(`TECH #${id} DELETED`);
+          loadTechStack();
+        } catch { showStatus("FAILED TO DELETE TECH", true); }
+      }
+    }
+  });
+
+  // ADD NEW TECH
+  document.getElementById("btn-open-tech").addEventListener("click", () => {
+    formTech.reset();
+    document.getElementById('t-id').value = "";
+    document.getElementById('t-order').value = "1";
+    techFormTitle.textContent = `// admin > tech > new`;
+    modalTech.classList.remove("hidden");
+  });
+
+  // SUBMIT TECH
+  formTech.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('t-id').value;
+    
+    const formData = new FormData();
+    formData.append("Name", document.getElementById('t-name').value);
+    formData.append("Sort_Order", document.getElementById('t-order').value);
+    
+    const fileInput = document.getElementById('t-icon');
+    if (fileInput.files.length > 0) formData.append("Icon", fileInput.files[0]);
+
+    try {
+      showStatus("UPLOADING TECH MODULE...");
+      const res = await fetch(id ? `${TECH_ENDPOINT}/${id}` : TECH_ENDPOINT, {
+        method: id ? "PUT" : "POST",
+        headers: formHeaders(),
+        body: formData,
+      });
+      if (!res.ok) throw new Error();
+      showStatus(id ? "TECH MODULE UPDATED" : "TECH MODULE INSTALLED");
+      modalTech.classList.add("hidden");
+      loadTechStack();
+    } catch { showStatus("FAILED TO SAVE TECH", true); }
+  });
+
+
+  /* ==========================================================================
+     2. SKILLS LOGIC (JSON Payload)
+     ========================================================================== */
+  const skillTbody = document.getElementById("skill-tbody");
+  const formSkill = document.getElementById('form-skill');
+  const skillFormTitle = document.getElementById('skill-form-title');
+
+  async function loadSkills() {
+    skillTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">> FETCHING SKILLS...</td></tr>`;
+    try {
+      const res = await fetch(SKILL_ENDPOINT);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      
+      if (!data.length) {
+        skillTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">> NO SKILLS FOUND.</td></tr>`;
+        return;
+      }
+      
+      data.sort((a, b) => a.sort_Order - b.sort_Order);
+      
+      skillTbody.innerHTML = data.map(s => `
+        <tr>
+          <td><strong>${s.id}</strong></td>
+          <td class="font-bold text-[var(--color-white)]">${s.name}</td>
+          <td>${s.category || '-'}</td>
+          <td class="text-[var(--color-red)]">${s.level}%</td>
+          <td class="${s.published ? 'text-green-500' : 'text-gray-500'}">${s.published ? 'ON' : 'OFF'}</td>
+          <td>
+            <button class="tui-action-btn btn-skill-edit" data-id="${s.id}">[ EDIT ]</button>
+            <button class="tui-action-btn btn-skill-del hover:bg-[var(--color-red)] hover:text-black hover:border-[var(--color-red)]" data-id="${s.id}">[ DELETE ]</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch {
+      skillTbody.innerHTML = `<tr><td colspan="6" class="tui-empty text-[var(--color-red)]">> ERROR LOADING SKILLS.</td></tr>`;
+    }
+  }
+
+  // EVENT DELEGATION SKILLS
+  skillTbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+
+    if (btn.classList.contains('btn-skill-edit')) {
+      try {
+        const res = await fetch(`${SKILL_ENDPOINT}/${id}`);
+        const data = await res.json();
+        const s = Array.isArray(data) ? data[0] : data;
+
+        document.getElementById('s-id').value = s.id;
+        document.getElementById('s-name').value = s.name ?? "";
+        document.getElementById('s-category').value = s.category ?? "";
+        document.getElementById('s-desc').value = s.description ?? "";
+        document.getElementById('s-icon').value = s.icon_Url ?? "";
+        document.getElementById('s-level').value = s.level ?? 0;
+        document.getElementById('s-order').value = s.sort_Order ?? 0;
+        document.getElementById('s-published').checked = s.published ?? false;
+
+        skillFormTitle.textContent = `// admin > skill > edit #${s.id}`;
+        modalSkill.classList.remove('hidden');
+      } catch { showStatus("FAILED TO FETCH SKILL", true); }
+    }
+
+    if (btn.classList.contains('btn-skill-del')) {
+      if (confirm(`> WARNING: UNINSTALL SKILL #${id}?`)) {
+        try {
+          const res = await fetch(`${SKILL_ENDPOINT}/${id}`, { method: "DELETE", headers: jsonHeaders() });
+          if (!res.ok) throw new Error();
+          showStatus(`SKILL #${id} DELETED`);
+          loadSkills();
+        } catch { showStatus("FAILED TO DELETE SKILL", true); }
+      }
+    }
+  });
+
+  // ADD NEW SKILL
+  document.getElementById("btn-open-skill").addEventListener("click", () => {
+    formSkill.reset();
+    document.getElementById('s-id').value = "";
+    document.getElementById('s-order').value = "0";
+    document.getElementById('s-level').value = "50";
+    document.getElementById('s-published').checked = true;
+    skillFormTitle.textContent = `// admin > skill > new`;
+    modalSkill.classList.remove("hidden");
+  });
+
+  // SUBMIT SKILL
+  formSkill.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('s-id').value;
+    
+    const payload = {
+      name: document.getElementById('s-name').value,
+      category: document.getElementById('s-category').value,
+      description: document.getElementById('s-desc').value,
+      icon_Url: document.getElementById('s-icon').value,
+      level: parseInt(document.getElementById('s-level').value) || 0,
+      sort_Order: parseInt(document.getElementById('s-order').value) || 0,
+      published: document.getElementById('s-published').checked
+    };
+
+    try {
+      showStatus("COMPILING SKILL...");
+      const res = await fetch(id ? `${SKILL_ENDPOINT}/${id}` : SKILL_ENDPOINT, {
+        method: id ? "PUT" : "POST",
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error();
+      showStatus(id ? "SKILL UPDATED" : "SKILL INSTALLED");
+      modalSkill.classList.add("hidden");
+      loadSkills();
+    } catch { showStatus("FAILED TO SAVE SKILL", true); }
+  });
+
+  // === INIT ===
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTechStack();
+    loadSkills();
+  });
+</script>

@@ -1,88 +1,53 @@
 ---
-import AdminLayout from "../../layouts/AdminLayout.astro";
+// src/pages/admin/profile.astro
+import AdminLayout from '../../layouts/AdminLayout.astro'
 ---
-<AdminLayout>
-  <div class="tui-page">
 
-    <div class="tui-page-header">
-      <span class="text-accent">// admin</span>
-      <span class="text-muted"> > </span>
-      <span>profile</span>
+<AdminLayout>
+  <div id="main-view" class="flex flex-col h-full pb-8">
+    <!-- SECTION HEADER -->
+    <div class="section-header flex items-center justify-between">
+      <div>// admin > profile & contacts <span class="inline-block w-[6px] h-[11px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
+      <span id="global-status" class="text-[11px] font-bold text-[var(--color-white)] hidden"></span>
     </div>
 
-    <p class="text-accent disable text-xs mb-2" id="status"></p>
+    <!-- ==============================================
+         1. PROFILE TABLE SECTION
+         ============================================== -->
+    <div class="px-8 pt-6 pb-4 flex items-center justify-between">
+      <div class="text-muted text-[11px] uppercase tracking-wider">// SYSTEM_PROFILES</div>
+      <button id="btn-open-add-profile" class="btn-outline">[INS] ADD PROFILE</button>
+    </div>
 
-    <!-- ── PROFILE TABLE ── -->
-    <div class="card mb-4">
-      <div class="tui-table-header">
-        <span class="col-label">// PROFILES</span>
-        <button class="btn-outline text-xs" id="add-profile-btn">+ NEW</button>
-      </div>
-
-      <table class="tui-table" id="profile-table">
+    <div class="px-8 overflow-x-auto mb-8">
+      <table class="tui-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>NAME</th>
-            <th>ROLE</th>
+            <th>NAME & ROLE</th>
             <th>STATUS</th>
-            <th>BIO</th>
+            <th>BIO / DESC</th>
             <th>ACTIONS</th>
           </tr>
         </thead>
         <tbody id="profile-tbody">
-          <tr><td colspan="6" class="tui-empty">Loading...</td></tr>
+          <tr>
+            <td colspan="5" class="tui-empty">> LOADING PROFILES...</td>
+          </tr>
         </tbody>
       </table>
-
-      <!-- PROFILE FORM PANEL -->
-      <div class="tui-form-panel disable" id="profile-form">
-        <div class="tui-form-header">
-          <span class="col-label" id="profile-form-title">// NEW PROFILE</span>
-          <button class="tui-remove-btn" id="close-profile-form">✕</button>
-        </div>
-        <input type="hidden" id="profile-id" />
-        <div class="tui-form-grid">
-          <div class="tui-field">
-            <label class="col-label" for="f-name">NAME</label>
-            <input class="input" type="text" id="f-name" placeholder="> name..." />
-          </div>
-          <div class="tui-field">
-            <label class="col-label" for="f-role">ROLE TITLE</label>
-            <input class="input" type="text" id="f-role" placeholder="> role..." />
-          </div>
-          <div class="tui-field">
-            <label class="col-label" for="f-status">STATUS</label>
-            <select class="input" id="f-status">
-              <option value="Active">Active</option>
-              <option value="Busy">Busy</option>
-              <option value="Unavailable">Unavailable</option>
-            </select>
-          </div>
-          <div class="tui-field">
-            <label class="col-label" for="f-photo">PHOTO URL</label>
-            <input class="input" type="text" id="f-photo" placeholder="> /uploads/..." />
-          </div>
-          <div class="tui-field" style="grid-column: span 2">
-            <label class="col-label" for="f-bio">BIO</label>
-            <textarea class="input" id="f-bio" placeholder="> bio..."></textarea>
-          </div>
-        </div>
-        <div class="tui-actions mt-3">
-          <button class="btn-outline" id="save-profile-btn">SAVE PROFILE</button>
-          <button class="tui-remove-btn" id="delete-profile-btn">DELETE</button>
-        </div>
-      </div>
     </div>
 
-    <!-- ── CONTACT TABLE ── -->
-    <div class="card">
-      <div class="tui-table-header">
-        <span class="col-label">// CONTACTS</span>
-        <button class="btn-outline text-xs" id="add-contact-btn">+ NEW</button>
-      </div>
+    <!-- ==============================================
+         2. CONTACT TABLE SECTION
+         ============================================== -->
+    <div class="px-8 pt-6 pb-4 flex items-center justify-between border-t border-[var(--color-border)]">
+      <div class="text-muted text-[11px] uppercase tracking-wider">// NETWORK_CONTACTS</div>
+      <button id="btn-open-add-contact" class="btn-outline">[INS] ADD CONTACT</button>
+    </div>
 
-      <table class="tui-table" id="contact-table">
+    <div class="px-8 overflow-x-auto">
+      <table class="tui-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -94,310 +59,408 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </tr>
         </thead>
         <tbody id="contact-tbody">
-          <tr><td colspan="6" class="tui-empty">Loading...</td></tr>
+          <tr>
+            <td colspan="6" class="tui-empty">> LOADING CONTACTS...</td>
+          </tr>
         </tbody>
       </table>
-
-      <!-- CONTACT FORM PANEL -->
-      <div class="tui-form-panel disable" id="contact-form">
-        <div class="tui-form-header">
-          <span class="col-label" id="contact-form-title">// NEW CONTACT</span>
-          <button class="tui-remove-btn" id="close-contact-form">✕</button>
-        </div>
-        <input type="hidden" id="contact-id" />
-        <div class="tui-form-grid">
-          <div class="tui-field">
-            <label class="col-label" for="c-profile-id">PROFILE ID</label>
-            <input class="input" type="number" id="c-profile-id" placeholder="> profile id..." />
-          </div>
-          <div class="tui-field">
-            <label class="col-label" for="c-platform">PLATFORM</label>
-            <input class="input" type="text" id="c-platform" placeholder="> github..." />
-          </div>
-          <div class="tui-field">
-            <label class="col-label" for="c-value">VALUE</label>
-            <input class="input" type="text" id="c-value" placeholder="> github.com/you..." />
-          </div>
-          <div class="tui-field">
-            <label class="col-label" for="c-order">SORT ORDER</label>
-            <input class="input" type="number" id="c-order" placeholder="> 0..." />
-          </div>
-        </div>
-        <div class="tui-actions mt-3">
-          <button class="btn-outline" id="save-contact-btn">SAVE CONTACT</button>
-          <button class="tui-remove-btn disable" id="delete-contact-btn">DELETE</button>
-        </div>
-      </div>
     </div>
+  </div>
 
+  <!-- ==============================================
+       MODAL: PROFILE FORM (MULTIPART)
+       ============================================== -->
+  <div id="modal-profile" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[800px] max-h-[90vh] overflow-y-auto p-7">
+      <div class="section-header flex items-center justify-between border-b border-[var(--color-border)] mb-6">
+        <div id="profile-form-title">// admin > profile > form <span class="inline-block w-[6px] h-[11px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
+        <button id="btn-close-profile" class="bg-transparent border-0 text-muted text-[11px] cursor-pointer tracking-[1px] hover:text-[var(--color-red)]">[ESC] CLOSE</button>
+      </div>
+
+      <form id="form-profile" autocomplete="off">
+        <input type="hidden" id="profile-id" />
+
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3.5">
+            <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">NAME</label>
+            <input type="text" id="p-name" required placeholder="Habib Herdiansyah" class="input" />
+          </div>
+          <div class="flex flex-col mb-3.5">
+            <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">ROLE TITLE</label>
+            <input type="text" id="p-role" required placeholder="Low Level Programmer" class="input" />
+          </div>
+        </div>
+
+        <div class="flex flex-col mb-3.5">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">STATUS</label>
+          <select id="p-status" required class="input">
+            <option value="Available for work">Available for work</option>
+            <option value="Busy">Busy</option>
+            <option value="Offline">Offline</option>
+          </select>
+        </div>
+
+        <!-- Tambahan Field Description -->
+        <div class="flex flex-col mb-3.5">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">DESCRIPTION</label>
+          <textarea id="p-description" rows="2" placeholder="Short description..." class="input"></textarea>
+        </div>
+
+        <div class="flex flex-col mb-3.5">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">BIO</label>
+          <textarea id="p-bio" rows="3" required placeholder="Love Low Level" class="input"></textarea>
+        </div>
+
+        <div class="flex flex-col mb-3.5">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">PHOTO (LEAVE EMPTY TO KEEP EXISTING)</label>
+          <input
+            type="file"
+            id="p-photo"
+            accept="image/*"
+            class="bg-transparent border border-dashed border-[var(--color-border)] p-6 text-muted text-center w-full cursor-pointer text-xs hover:border-[#555] hover:text-[var(--color-white)]"
+          />
+        </div>
+
+        <div class="flex items-center gap-3.5 mt-6 pt-6 border-t border-[var(--color-border)]">
+          <button type="submit" class="btn-outline">[ENTER] SAVE PROFILE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       MODAL: CONTACT FORM (JSON)
+       ============================================== -->
+  <div id="modal-contact" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-7">
+      <div class="section-header flex items-center justify-between border-b border-[var(--color-border)] mb-6">
+        <div id="contact-form-title">// admin > contact > form <span class="inline-block w-[6px] h-[11px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
+        <button id="btn-close-contact" class="bg-transparent border-0 text-muted text-[11px] cursor-pointer tracking-[1px] hover:text-[var(--color-red)]">[ESC] CLOSE</button>
+      </div>
+
+      <form id="form-contact" autocomplete="off">
+        <input type="hidden" id="contact-id" />
+
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3.5">
+            <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">PROFILE ID</label>
+            <input type="number" id="c-profile-id" required placeholder="1" class="input" />
+          </div>
+          <div class="flex flex-col mb-3.5">
+            <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">PLATFORM</label>
+            <input type="text" id="c-platform" required placeholder="github" class="input" />
+          </div>
+        </div>
+
+        <div class="flex flex-col mb-3.5">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">VALUE / URL</label>
+          <input type="text" id="c-value" required placeholder="https://github.com/..." class="input" />
+        </div>
+
+        <div class="flex flex-col mb-3.5">
+          <label class="text-[11px] text-muted mb-1.5 tracking-[1px]">SORT ORDER</label>
+          <input type="number" id="c-order" required value="0" class="input" />
+        </div>
+
+        <div class="flex items-center gap-3.5 mt-6 pt-6 border-t border-[var(--color-border)]">
+          <button type="submit" class="btn-outline">[ENTER] SAVE CONTACT</button>
+        </div>
+      </form>
+    </div>
   </div>
 </AdminLayout>
 
 <script>
-  const BASE  = import.meta.env.PUBLIC_BACKEND;
+  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
   const token = () => sessionStorage.getItem("token");
-  const headers = () => ({
+
+  const jsonHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${token()}`,
   });
 
-  const status = document.getElementById("status");
+  const formHeaders = () => ({
+    Authorization: `Bearer ${token()}`,
+  });
+
+  const CURSOR = '<span class="inline-block w-[6px] h-[11px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span>';
+
+  const globalStatus = document.getElementById("global-status");
   function showStatus(msg, isError = false) {
-    status.textContent = msg;
-    status.classList.remove("disable");
-    status.style.color = isError ? "var(--color-red)" : "var(--color-white)";
-    setTimeout(() => status.classList.add("disable"), 3000);
+    globalStatus.textContent = `> ${msg}`;
+    globalStatus.classList.remove("hidden");
+    globalStatus.classList.toggle("text-[var(--color-white)]", !isError);
+    globalStatus.classList.toggle("text-[var(--color-red)]", isError);
+    setTimeout(() => globalStatus.classList.add("hidden"), 3500);
   }
 
-  // ────────────────────────────────────────────
-  // PROFILE
-  // ────────────────────────────────────────────
-  const profileTbody     = document.getElementById("profile-tbody");
-  const profileForm      = document.getElementById("profile-form");
-  const profileFormTitle = document.getElementById("profile-form-title");
-  const profileIdEl      = document.getElementById("profile-id");
-  const fName            = document.getElementById("f-name");
-  const fRole            = document.getElementById("f-role");
-  const fStatus          = document.getElementById("f-status");
-  const fPhoto           = document.getElementById("f-photo");
-  const fBio             = document.getElementById("f-bio");
-  const deleteProfileBtn = document.getElementById("delete-profile-btn");
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('modal-profile').classList.add('hidden');
+      document.getElementById('modal-contact').classList.add('hidden');
+    }
+  });
+
+
+  /* ==========================================================================
+     1. PROFILE LOGIC
+     ========================================================================== */
+  const profileTbody = document.getElementById("profile-tbody");
+  const modalProfile = document.getElementById('modal-profile');
+  const formProfile = document.getElementById('form-profile');
+  const profileFormTitle = document.getElementById('profile-form-title');
 
   async function loadProfiles() {
-    profileTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">Loading...</td></tr>`;
+    profileTbody.innerHTML = `<tr><td colspan="5" class="tui-empty">> FETCHING PROFILES...</td></tr>`;
     try {
-      // TODO: adjust endpoint
-      const res = await fetch(`${BASE}/api/v1/profile`, { headers: headers() });
+      const res = await fetch(`${API_URL}/api/v1/profile`);
+      if (!res.ok) throw new Error("Fetch failed");
       const data = await res.json();
-      if (!data.length) {
-        profileTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">No profiles found.</td></tr>`;
+
+      const profiles = Array.isArray(data) ? data : [data];
+      if (profiles.length === 0 || !profiles[0].id) {
+        profileTbody.innerHTML = `<tr><td colspan="5" class="tui-empty">> NO PROFILES FOUND.</td></tr>`;
         return;
       }
-      profileTbody.innerHTML = data.map(p => `
+
+      profileTbody.innerHTML = profiles.map(p => `
         <tr>
-          <td>${p.id}</td>
-          <td>${p.name}</td>
-          <td>${p.role_Title}</td>
-          <td><span class="tag">${p.status}</span></td>
-          <td class="tui-truncate">${p.bio ?? "-"}</td>
-          <img src="${BASE}${p.photo_Url}" class="tui-avatar" />
+          <td><strong>${p.id}</strong></td>
           <td>
-            <button class="tui-action-btn" onclick="editProfile(${p.id})">EDIT</button>
-            <button class="tui-remove-btn">DELETE</button>
+            <div class="font-bold">${p.name}</div>
+            <div class="text-xs text-muted">${p.role_Title}</div>
+          </td>
+          <td><span class="tag">${p.status}</span></td>
+          <td>
+            <div class="tui-truncate text-muted" title="${p.description || ''}">${p.description ? p.description : (p.bio ?? "-")}</div>
+          </td>
+          <td>
+            <button class="tui-action-btn btn-profile-edit" data-id="${p.id}">[ EDIT ]</button>
+            <button class="tui-action-btn btn-profile-del hover:bg-[var(--color-red)] hover:text-black hover:border-[var(--color-red)]" data-id="${p.id}">[ DELETE ]</button>
           </td>
         </tr>
       `).join("");
     } catch {
-      showStatus("Failed to load profiles.", true);
+      profileTbody.innerHTML = `<tr><td colspan="5" class="tui-empty text-[var(--color-red)]">> ERROR LOADING PROFILES.</td></tr>`;
     }
   }
 
-  window.editProfile = async (id) => {
-    try {
-      // TODO: adjust endpoint
-      const res  = await fetch(`${BASE}/api/v1/profile/${id}`, { headers: headers() });
-      const data = await res.json();
-      const p    = Array.isArray(data) ? data[0] : data;
+  profileTbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
 
-      profileIdEl.value = p.id;
-      fName.value       = p.name       ?? "";
-      fRole.value       = p.role_Title ?? "";
-      fStatus.value     = p.status     ?? "Active";
-      fPhoto.value      = p.photo_Url  ?? "";
-      fBio.value        = p.bio        ?? "";
+    const id = btn.getAttribute('data-id');
 
-      profileFormTitle.textContent = `// EDIT PROFILE #${p.id}`;
-      deleteProfileBtn.classList.remove("disable");
-      profileForm.classList.remove("disable");
-    } catch {
-      showStatus("Failed to load profile.", true);
+    // EDIT PROFILE
+    if (btn.classList.contains('btn-profile-edit')) {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/profile/${id}`);
+        const data = await res.json();
+        const p = Array.isArray(data) ? data[0] : data;
+
+        document.getElementById('profile-id').value = p.id;
+        document.getElementById('p-name').value = p.name ?? "";
+        document.getElementById('p-role').value = p.role_Title ?? "";
+        document.getElementById('p-status').value = p.status ?? "Available for work";
+
+        // Populate Description
+        document.getElementById('p-description').value = p.description ?? "";
+
+        document.getElementById('p-bio').value = p.bio ?? "";
+        document.getElementById('p-photo').value = "";
+
+        profileFormTitle.innerHTML = `// admin > profile > edit #${p.id} ${CURSOR}`;
+        modalProfile.classList.remove('hidden');
+      } catch {
+        showStatus("FAILED TO FETCH PROFILE DETAIL", true);
+      }
     }
-  };
 
-  function openNewProfile() {
-    profileIdEl.value = "";
-    fName.value = fRole.value = fPhoto.value = fBio.value = "";
-    fStatus.value = "Active";
-    profileFormTitle.textContent = "// NEW PROFILE";
-    deleteProfileBtn.classList.add("disable");
-    profileForm.classList.remove("disable");
-  }
-
-  document.getElementById("add-profile-btn").addEventListener("click", openNewProfile);
-  document.getElementById("close-profile-form").addEventListener("click", () => {
-    profileForm.classList.add("disable");
+    // DELETE PROFILE
+    if (btn.classList.contains('btn-profile-del')) {
+      if (confirm(`> WARNING: DELETE PROFILE #${id}?`)) {
+        try {
+          const res = await fetch(`${API_URL}/api/v1/profile/${id}`, {
+            method: "DELETE", headers: jsonHeaders()
+          });
+          if (!res.ok) throw new Error();
+          showStatus(`PROFILE #${id} DELETED`);
+          loadProfiles();
+        } catch {
+          showStatus("FAILED TO DELETE PROFILE", true);
+        }
+      }
+    }
   });
 
-  document.getElementById("save-profile-btn").addEventListener("click", async () => {
-    const id = profileIdEl.value;
-    const payload = {
-      name:       fName.value,
-      role_Title: fRole.value,
-      status:     fStatus.value,
-      photo_Url:  fPhoto.value,
-      bio:        fBio.value,
-    };
+  document.getElementById("btn-open-add-profile").addEventListener("click", () => {
+    formProfile.reset();
+    document.getElementById('profile-id').value = "";
+    profileFormTitle.innerHTML = `// admin > profile > new ${CURSOR}`;
+    modalProfile.classList.remove("hidden");
+  });
+
+  document.getElementById("btn-close-profile").addEventListener("click", () => {
+    modalProfile.classList.add("hidden");
+  });
+
+  formProfile.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('profile-id').value;
+
+    const form = new FormData();
+    form.append("Name", document.getElementById('p-name').value);
+    form.append("Role_Title", document.getElementById('p-role').value);
+    form.append("Status", document.getElementById('p-status').value);
+    form.append("Description", document.getElementById('p-description').value); // Append Description
+    form.append("Bio", document.getElementById('p-bio').value);
+
+    const fileInput = document.getElementById('p-photo');
+    if (fileInput.files.length > 0) {
+      form.append("Photo", fileInput.files[0]);
+    }
+
     try {
-      // TODO: adjust endpoints + methods to match your API
-      const res = await fetch(
-        id ? `${BASE}/api/v1/profile/${id}` : `${BASE}/api/v1/profile`,
-        {
-          method: id ? "PUT" : "POST",
-          headers: headers(),
-          body: JSON.stringify(payload),
-        }
-      );
+      showStatus("SAVING PROFILE...");
+      const res = await fetch(id ? `${API_URL}/api/v1/profile/${id}` : `${API_URL}/api/v1/profile`, {
+        method: id ? "PUT" : "POST",
+        headers: formHeaders(),
+        body: form,
+      });
+
       if (!res.ok) throw new Error();
-      showStatus(id ? "Profile updated." : "Profile created.");
-      profileForm.classList.add("disable");
+
+      showStatus(id ? "PROFILE UPDATED" : "PROFILE CREATED");
+      modalProfile.classList.add("hidden");
       loadProfiles();
     } catch {
-      showStatus("Failed to save profile.", true);
+      showStatus("FAILED TO SAVE PROFILE", true);
     }
   });
- 
-document.getElementById("delete-profile-btn").addEventListener("click", async () => {
-  const id = profileIdEl.value;
-  if (!id || !confirm(`Delete profile #${id}?`)) return;
 
-  try {
-    const res = await fetch(`${BASE}/api/v1/profile/${id}`, {
-      method: "DELETE",
-      headers: headers(),
-    });
-    
-    if (!res.ok) throw new Error();
-    
-    showStatus("Profile deleted.");
-    profileForm.classList.add("disable");
-    loadProfiles();
-  } catch {
-    showStatus("Failed to delete.", true);
-  }
-});
 
-  // ────────────────────────────────────────────
-  // CONTACT
-  // ────────────────────────────────────────────
-  const contactTbody     = document.getElementById("contact-tbody");
-  const contactForm      = document.getElementById("contact-form");
-  const contactFormTitle = document.getElementById("contact-form-title");
-  const contactIdEl      = document.getElementById("contact-id");
-  const cProfileId       = document.getElementById("c-profile-id");
-  const cPlatform        = document.getElementById("c-platform");
-  const cValue           = document.getElementById("c-value");
-  const cOrder           = document.getElementById("c-order");
-  const deleteContactBtn = document.getElementById("delete-contact-btn");
+  /* ==========================================================================
+     2. CONTACT LOGIC
+     ========================================================================== */
+  const contactTbody = document.getElementById("contact-tbody");
+  const modalContact = document.getElementById('modal-contact');
+  const formContact = document.getElementById('form-contact');
+  const contactFormTitle = document.getElementById('contact-form-title');
 
   async function loadContacts() {
-    contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">Loading...</td></tr>`;
+    contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">> FETCHING CONTACTS...</td></tr>`;
     try {
-      // TODO: adjust endpoint
-      const res  = await fetch(`${BASE}/api/v1/contact`, { headers: headers() });
+      const res = await fetch(`${API_URL}/api/v1/contact`);
+      if (!res.ok) throw new Error();
       const data = await res.json();
+
       if (!data.length) {
-        contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">No contacts found.</td></tr>`;
+        contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty">> NO CONTACTS FOUND.</td></tr>`;
         return;
       }
+
       contactTbody.innerHTML = data.map(c => `
         <tr>
-          <td>${c.id}</td>
+          <td><strong>${c.id}</strong></td>
           <td>${c.profile_Id ?? c.profileId}</td>
-          <td>${c.platform}</td>
-          <td>${c.value}</td>
+          <td><span class="tag">${c.platform}</span></td>
+          <td class="text-muted">${c.value}</td>
           <td>${c.sort_Order ?? 0}</td>
           <td>
-            <button class="tui-action-btn" onclick="editContact(${c.id})">EDIT</button>
+            <button class="tui-action-btn btn-contact-edit" data-id="${c.id}">[ EDIT ]</button>
+            <button class="tui-action-btn btn-contact-del hover:bg-[var(--color-red)] hover:text-black hover:border-[var(--color-red)]" data-id="${c.id}">[ DELETE ]</button>
           </td>
         </tr>
       `).join("");
     } catch {
-      showStatus("Failed to load contacts.", true);
+      contactTbody.innerHTML = `<tr><td colspan="6" class="tui-empty text-[var(--color-red)]">> ERROR LOADING CONTACTS.</td></tr>`;
     }
   }
 
-  window.editContact = async (id) => {
-    try {
-      // TODO: adjust endpoint
-      const res  = await fetch(`${BASE}/api/v1/contact/${id}`, { headers: headers() });
-      const data = await res.json();
-      const c    = Array.isArray(data) ? data[0] : data;
+  contactTbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
 
-      contactIdEl.value  = c.id;
-      cProfileId.value   = c.profile_Id   ?? c.profileId ?? "";
-      cPlatform.value    = c.platform     ?? "";
-      cValue.value       = c.value        ?? "";
-      cOrder.value       = c.sort_Order   ?? 0;
+    if (btn.classList.contains('btn-contact-edit')) {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/contact/${id}`);
+        const data = await res.json();
+        const c = Array.isArray(data) ? data[0] : data;
 
-      contactFormTitle.textContent = `// EDIT CONTACT #${c.id}`;
-      deleteContactBtn.classList.remove("disable");
-      contactForm.classList.remove("disable");
-    } catch {
-      showStatus("Failed to load contact.", true);
+        document.getElementById('contact-id').value = c.id;
+        document.getElementById('c-profile-id').value = c.profile_Id ?? c.profileId ?? "";
+        document.getElementById('c-platform').value = c.platform ?? "";
+        document.getElementById('c-value').value = c.value ?? "";
+        document.getElementById('c-order').value = c.sort_Order ?? 0;
+
+        contactFormTitle.innerHTML = `// admin > contact > edit #${c.id} ${CURSOR}`;
+        modalContact.classList.remove('hidden');
+      } catch {
+        showStatus("FAILED TO FETCH CONTACT DETAIL", true);
+      }
     }
-  };
 
-  function openNewContact() {
-    contactIdEl.value = "";
-    cProfileId.value = cPlatform.value = cValue.value = "";
-    cOrder.value = "0";
-    contactFormTitle.textContent = "// NEW CONTACT";
-    deleteContactBtn.classList.add("disable");
-    contactForm.classList.remove("disable");
-  }
-
-  document.getElementById("add-contact-btn").addEventListener("click", openNewContact);
-  document.getElementById("close-contact-form").addEventListener("click", () => {
-    contactForm.classList.add("disable");
-  });
-
-  document.getElementById("save-contact-btn").addEventListener("click", async () => {
-    const id = contactIdEl.value;
-    const payload = {
-      // TODO: adjust keys to match your API
-      profile_Id:  parseInt(cProfileId.value),
-      platform:    cPlatform.value,
-      value:       cValue.value,
-      sort_Order:  parseInt(cOrder.value) || 0,
-    };
-    try {
-      const res = await fetch(
-        id ? `${BASE}/api/v1/contact/${id}` : `${BASE}/api/v1/contact`,
-        {
-          method: id ? "PUT" : "POST",
-          headers: headers(),
-          body: JSON.stringify(payload),
+    if (btn.classList.contains('btn-contact-del')) {
+      if (confirm(`> WARNING: DELETE CONTACT #${id}?`)) {
+        try {
+          const res = await fetch(`${API_URL}/api/v1/contact/${id}`, {
+            method: "DELETE", headers: jsonHeaders()
+          });
+          if (!res.ok) throw new Error();
+          showStatus(`CONTACT #${id} DELETED`);
+          loadContacts();
+        } catch {
+          showStatus("FAILED TO DELETE CONTACT", true);
         }
-      );
-      if (!res.ok) throw new Error();
-      showStatus(id ? "Contact updated." : "Contact created.");
-      contactForm.classList.add("disable");
-      loadContacts();
-    } catch {
-      showStatus("Failed to save contact.", true);
+      }
     }
   });
 
-  deleteContactBtn.addEventListener("click", async () => {
-    const id = contactIdEl.value;
-    if (!id || !confirm(`Delete contact #${id}?`)) return;
+  document.getElementById("btn-open-add-contact").addEventListener("click", () => {
+    formContact.reset();
+    document.getElementById('contact-id').value = "";
+    document.getElementById('c-order').value = "0";
+    contactFormTitle.innerHTML = `// admin > contact > new ${CURSOR}`;
+    modalContact.classList.remove("hidden");
+  });
+
+  document.getElementById("btn-close-contact").addEventListener("click", () => {
+    modalContact.classList.add("hidden");
+  });
+
+  formContact.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('contact-id').value;
+
+    const payload = {
+      profile_Id: parseInt(document.getElementById('c-profile-id').value),
+      platform: document.getElementById('c-platform').value,
+      value: document.getElementById('c-value').value,
+      sort_Order: parseInt(document.getElementById('c-order').value) || 0,
+    };
+
     try {
-      const res = await fetch(`${BASE}/api/v1/contact/${id}`, {
-        method: "DELETE",
-        headers: headers(),
+      showStatus("SAVING CONTACT...");
+      const res = await fetch(id ? `${API_URL}/api/v1/contact/${id}` : `${API_URL}/api/v1/contact`, {
+        method: id ? "PUT" : "POST",
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
       });
+
       if (!res.ok) throw new Error();
-      showStatus("Contact deleted.");
-      contactForm.classList.add("disable");
+
+      showStatus(id ? "CONTACT UPDATED" : "CONTACT CREATED");
+      modalContact.classList.add("hidden");
       loadContacts();
     } catch {
-      showStatus("Failed to delete.", true);
+      showStatus("FAILED TO SAVE CONTACT", true);
     }
   });
 
-  // ────────────────────────────────────────────
-  // INIT
-  // ────────────────────────────────────────────
-  loadProfiles();
-  loadContacts();
+  // === INITIALIZATION ===
+  document.addEventListener('DOMContentLoaded', () => {
+    loadProfiles();
+    loadContacts();
+  });
 </script>

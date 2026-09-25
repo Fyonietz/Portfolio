@@ -1,21 +1,19 @@
 ---
-// src/pages/admin/projects.astro
 import AdminLayout from '../../layouts/AdminLayout.astro'
 ---
 
 <AdminLayout>
-  <!-- BAGIAN UTAMA: BREADCRUMB & TABEL -->
-  <div id="main-view" class="view-panel">
-    <div class="section-header flex-between">
-      <div>// admin > projects <span class="cursor"></span></div>
+  <div id="main-view" class="flex flex-col h-full">
+    <div class="section-header flex items-center justify-between">
+      <div>// admin > projects <span class="inline-block w-[6px] h-[10px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
       <button id="btn-open-add" class="btn-outline">[INS] ADD PROJECT</button>
     </div>
 
-    <div class="toolbar">
-      <input type="text" id="search-input" placeholder="> SEARCH PROJECT TITLE OR TECH..." />
+    <div class="px-8 pt-6">
+      <input type="text" id="search-input" placeholder="> SEARCH PROJECT TITLE..." class="input" />
     </div>
 
-    <div class="table-container">
+    <div class="px-8 pt-6 flex-1 overflow-y-auto">
       <table class="tui-table">
         <thead>
           <tr>
@@ -26,747 +24,437 @@ import AdminLayout from '../../layouts/AdminLayout.astro'
           </tr>
         </thead>
         <tbody id="project-tbody">
-          <tr>
-            <td colspan="4" class="empty-state">LOADING PROJECTS...</td>
-          </tr>
+          <tr><td colspan="4" class="tui-empty">LOADING...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- MODAL: ADD PROJECT -->
-  <div id="modal-add" class="modal-overlay disable">
-    <div class="modal-content card">
-      <div class="section-header flex-between" style="border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
-        <div>// admin > projects > new <span class="cursor"></span></div>
-        <button id="btn-close-add" class="btn-text-muted">[ESC] CLOSE</button>
+  <!-- MODAL ADD -->
+  <div id="modal-add" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[800px] max-h-[90vh] overflow-y-auto p-6">
+      <div class="section-header flex items-center justify-between mb-6">
+        <div>// new project <span class="inline-block w-[6px] h-[10px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
+        <button id="btn-close-add" class="bg-transparent border-0 text-muted text-[10px] cursor-pointer hover:text-[var(--color-red)]">[ESC] CLOSE</button>
       </div>
-
-      <form id="form-add-project" autocomplete="off">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>TITLE</label>
-            <input type="text" name="title" required placeholder="Project Name" />
+      <form id="form-add" autocomplete="off">
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">TITLE</label>
+            <input type="text" name="title" required placeholder="Project Name" class="input" />
           </div>
-          <div class="form-group">
-            <label>SLUG</label>
-            <input type="text" name="slug" required placeholder="project-name" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>SHORT DESCRIPTION</label>
-          <input type="text" name="short_desc" required placeholder="Brief summary of the project..." />
-        </div>
-
-        <div class="form-group">
-          <label>FULL DESCRIPTION</label>
-          <textarea name="full_desc" rows="4" required placeholder="Detailed explanation..."></textarea>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-group">
-            <label>TECH STACK</label>
-            <input type="text" name="tech_stack" placeholder="Zig, Astro, Linux" />
-          </div>
-          <div class="form-group">
-            <label>SORT ORDER</label>
-            <input type="number" name="sort_order" value="0" />
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">SLUG</label>
+            <input type="text" name="slug" required placeholder="project-name" class="input" />
           </div>
         </div>
-
-        <div class="form-grid">
-          <div class="form-group">
-            <label>REPO URL</label>
-            <input type="url" name="repo_url" placeholder="https://github.com/..." />
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">SHORT DESCRIPTION</label>
+          <input type="text" name="short_desc" required placeholder="Brief summary..." class="input" />
+        </div>
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">FULL DESCRIPTION</label>
+          <textarea name="full_desc" rows="4" placeholder="Detailed explanation..." class="input"></textarea>
+        </div>
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">REPO URL</label>
+            <input type="url" name="repo_url" placeholder="https://github.com/..." class="input" />
           </div>
-          <div class="form-group">
-            <label>DEMO URL</label>
-            <input type="url" name="demo_url" placeholder="https://..." />
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">DEMO URL</label>
+            <input type="url" name="demo_url" placeholder="https://..." class="input" />
           </div>
         </div>
-
-        <div class="form-group upload-slot">
-          <label>PHOTOS (MULTIPLE)</label>
-          <input type="file" name="photos" multiple accept="image/*" />
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">SORT ORDER</label>
+            <input type="number" name="sort_order" value="0" class="input" />
+          </div>
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">PUBLISHED</label>
+            <div class="flex items-center gap-2 mt-2">
+              <input type="checkbox" name="published" checked />
+              <span class="text-[11px] text-muted">centang untuk publish</span>
+            </div>
+          </div>
         </div>
-
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" name="published" checked />
-            <span class="checkbox-label">PUBLISHED</span>
-          </label>
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">TECH STACK</label>
+          <div id="add-techstack-list" class="flex flex-wrap gap-1.5 p-2.5 border border-[var(--color-border)] rounded-[2px] min-h-[42px]"></div>
         </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-outline">[ENTER] SAVE PROJECT</button>
-          <span id="add-status" class="status-msg disable">SAVING...</span>
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">PHOTOS</label>
+          <input type="file" name="photos" multiple accept="image/*" class="bg-transparent border border-dashed border-[var(--color-border)] p-6 text-muted w-full cursor-pointer text-[11px] hover:border-[#444] hover:text-[var(--color-white)]" />
+        </div>
+        <div class="flex items-center gap-3 mt-6 pt-6 border-t border-[var(--color-border)]">
+          <button type="submit" class="btn-outline">[ENTER] SAVE</button>
+          <span id="add-status" class="text-[11px] text-[var(--color-red)] hidden"></span>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: EDIT PROJECT -->
-  <div id="modal-edit" class="modal-overlay disable">
-    <div class="modal-content card">
-      <div class="section-header flex-between" style="border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
-        <div>// admin > projects > edit <span class="cursor"></span></div>
-        <button id="btn-close-edit" class="btn-text-muted">[ESC] CLOSE</button>
+  <!-- MODAL EDIT -->
+  <div id="modal-edit" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[800px] max-h-[90vh] overflow-y-auto p-6">
+      <div class="section-header flex items-center justify-between mb-6">
+        <div>// edit project <span class="inline-block w-[6px] h-[10px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
+        <button id="btn-close-edit" class="bg-transparent border-0 text-muted text-[10px] cursor-pointer hover:text-[var(--color-red)]">[ESC] CLOSE</button>
       </div>
-
-      <form id="form-edit-project" autocomplete="off">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>TITLE</label>
-            <input type="text" name="title" required placeholder="Project Name" />
+      <form id="form-edit" autocomplete="off">
+        <input type="hidden" name="project_id" />
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">TITLE</label>
+            <input type="text" name="title" required placeholder="Project Name" class="input" />
           </div>
-          <div class="form-group">
-            <label>SLUG</label>
-            <input type="text" name="slug" required placeholder="project-name" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>SHORT DESCRIPTION</label>
-          <input type="text" name="short_desc" required placeholder="Brief summary of the project..." />
-        </div>
-
-        <div class="form-group">
-          <label>FULL DESCRIPTION</label>
-          <textarea name="full_desc" rows="4" required placeholder="Detailed explanation..."></textarea>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-group">
-            <label>TECH STACK</label>
-            <input type="text" name="tech_stack" placeholder="Zig, Astro, Linux" />
-          </div>
-          <div class="form-group">
-            <label>SORT ORDER</label>
-            <input type="number" name="sort_order" value="0" />
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">SLUG</label>
+            <input type="text" name="slug" required placeholder="project-name" class="input" />
           </div>
         </div>
-
-        <div class="form-grid">
-          <div class="form-group">
-            <label>REPO URL</label>
-            <input type="url" name="repo_url" placeholder="https://github.com/..." />
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">SHORT DESCRIPTION</label>
+          <input type="text" name="short_desc" required placeholder="Brief summary..." class="input" />
+        </div>
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">FULL DESCRIPTION</label>
+          <textarea name="full_desc" rows="4" placeholder="Detailed explanation..." class="input"></textarea>
+        </div>
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">REPO URL</label>
+            <input type="url" name="repo_url" placeholder="https://github.com/..." class="input" />
           </div>
-          <div class="form-group">
-            <label>DEMO URL</label>
-            <input type="url" name="demo_url" placeholder="https://..." />
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">DEMO URL</label>
+            <input type="url" name="demo_url" placeholder="https://..." class="input" />
           </div>
         </div>
-
-        <div class="form-group upload-slot">
-          <label>UPDATE PHOTOS (LEAVE EMPTY TO KEEP EXISTING)</label>
-          <input type="file" name="photos" multiple accept="image/*" />
+        <div class="tui-form-grid">
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">SORT ORDER</label>
+            <input type="number" name="sort_order" value="0" class="input" />
+          </div>
+          <div class="flex flex-col mb-3">
+            <label class="text-[10px] text-muted mb-1 tracking-[1px]">PUBLISHED</label>
+            <div class="flex items-center gap-2 mt-2">
+              <input type="checkbox" name="published" />
+              <span class="text-[11px] text-muted">centang untuk publish</span>
+            </div>
+          </div>
         </div>
-
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" name="published" />
-            <span class="checkbox-label">PUBLISHED</span>
-          </label>
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">TECH STACK</label>
+          <div id="edit-techstack-list" class="flex flex-wrap gap-1.5 p-2.5 border border-[var(--color-border)] rounded-[2px] min-h-[42px]"></div>
         </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-outline">[ENTER] UPDATE PROJECT</button>
-          <span id="edit-status" class="status-msg disable">UPDATING...</span>
+        <div class="flex flex-col mb-3">
+          <label class="text-[10px] text-muted mb-1 tracking-[1px]">PHOTOS (kosongkan untuk pertahankan foto lama)</label>
+          <input type="file" name="photos" multiple accept="image/*" class="bg-transparent border border-dashed border-[var(--color-border)] p-6 text-muted w-full cursor-pointer text-[11px] hover:border-[#444] hover:text-[var(--color-white)]" />
+        </div>
+        <div class="flex items-center gap-3 mt-6 pt-6 border-t border-[var(--color-border)]">
+          <button type="submit" class="btn-outline">[ENTER] UPDATE</button>
+          <span id="edit-status" class="text-[11px] text-[var(--color-red)] hidden"></span>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: DETAIL PROJECT (VIEW) -->
-  <div id="modal-detail" class="modal-overlay disable">
-    <div class="modal-content card">
-      <div class="section-header flex-between" style="border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
-        <div>// admin > projects > detail <span class="cursor"></span></div>
-        <button id="btn-close-detail" class="btn-text-muted">[ESC] CLOSE</button>
+  <!-- MODAL DETAIL -->
+  <div id="modal-detail" class="fixed inset-0 z-[100] p-8 flex hidden items-center justify-center bg-[rgba(17,17,17,0.95)]">
+    <div class="card w-full max-w-[800px] max-h-[90vh] overflow-y-auto p-6">
+      <div class="section-header flex items-center justify-between mb-6">
+        <div>// project detail <span class="inline-block w-[6px] h-[10px] bg-[var(--color-red)] animate-blink align-text-bottom ml-1"></span></div>
+        <button id="btn-close-detail" class="bg-transparent border-0 text-muted text-[10px] cursor-pointer hover:text-[var(--color-red)]">[ESC] CLOSE</button>
       </div>
-      <div id="detail-content">
-        <!-- Konten detail dirender JS -->
-      </div>
+      <div id="detail-content"></div>
     </div>
   </div>
 </AdminLayout>
 
-<style>
-  /* === LAYOUT & UTILS === */
-  .view-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  .flex-between {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .disable {
-    display: none !important;
-  }
-  
-  /* === SECTION HEADER === */
-  .section-header {
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: 12px 2rem;
-    color: var(--color-red);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  /* Kursor berkedip khas TUI */
-  .cursor {
-    display: inline-block;
-    width: 6px;
-    height: 10px;
-    background: var(--color-red);
-    animation: blink 1s step-end infinite;
-    vertical-align: text-bottom;
-    margin-left: 4px;
-  }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-  /* === TOOLBAR & TABLE === */
-  .toolbar {
-    padding: 1.5rem 2rem 0 2rem;
-  }
-  .toolbar input {
-    width: 100%;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    color: var(--color-white);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    padding: 8px 12px;
-    border-radius: 2px;
-    outline: none;
-  }
-  .toolbar input:focus {
-    border-color: var(--color-red);
-  }
-
-  .table-container {
-    padding: 1.5rem 2rem;
-    flex: 1;
-    overflow-y: auto;
-  }
-  .tui-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-  }
-  .tui-table th {
-    color: var(--color-red);
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-align: left;
-    padding: 10px;
-    border-bottom: 1px solid var(--color-border);
-    text-transform: uppercase;
-  }
-  .tui-table td {
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-white);
-    vertical-align: middle;
-  }
-  .tui-table tr:hover td {
-    background: #151515;
-  }
-  .empty-state {
-    text-align: center;
-    color: var(--color-muted);
-    padding: 2rem !important;
-  }
-
-  /* === BADGE / TAG === */
-  .tag {
-    background: #1a1a1a;
-    border: 1px solid var(--color-border);
-    color: var(--color-red);
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 1px;
-    text-transform: uppercase;
-  }
-
-  /* === BUTTONS (IMPROVED READABILITY) === */
-  .btn-outline {
-    border: 1px solid var(--color-red);
-    color: var(--color-red);
-    background: transparent;
-    padding: 8px 18px;
-    font-size: 12px;
-    font-family: 'Share Tech Mono', monospace;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .btn-outline:hover {
-    background: var(--color-red);
-    color: #000;
-  }
-  
-  /* Button Close di header modal */
-  .btn-text-muted {
-    background: transparent;
-    border: none;
-    color: var(--color-muted);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    cursor: pointer;
-    letter-spacing: 1px;
-  }
-  .btn-text-muted:hover {
-    color: var(--color-red);
-  }
-
-  /* Button Action di Table (Lebih menonjol) */
-  .btn-text {
-    background: transparent;
-    border: 1px solid transparent;
-    color: var(--color-white);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    padding: 4px 8px;
-    margin-right: 4px;
-    border-radius: 2px;
-    transition: background 0.1s, color 0.1s;
-  }
-  .btn-text:hover {
-    background: #1f1f1f;
-    color: var(--color-red);
-    border: 1px solid #333;
-  }
-  .btn-text.danger {
-    color: var(--color-red);
-  }
-  .btn-text.danger:hover {
-    background: var(--color-red);
-    color: #000;
-    border-color: var(--color-red);
-  }
-
-  /* === MODAL OVERLAY === */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(17, 17, 17, 0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-    padding: 2rem;
-  }
-  .modal-content.card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    padding: 1.5rem;
-    width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  /* === FORMS === */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 12px;
-  }
-  .form-group label {
-    font-size: 10px;
-    color: var(--color-muted);
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-  }
-  .form-group input:not([type="checkbox"]):not([type="file"]),
-  .form-group textarea {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    color: var(--color-white);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    padding: 8px 12px;
-    border-radius: 2px;
-    outline: none;
-  }
-  .form-group input:focus,
-  .form-group textarea:focus {
-    border-color: var(--color-red);
-  }
-
-  .upload-slot input[type="file"] {
-    background: transparent;
-    border: 1px dashed var(--color-border);
-    padding: 1.5rem;
-    color: var(--color-muted);
-    text-align: center;
-    width: 100%;
-    cursor: pointer;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-  }
-  .upload-slot input[type="file"]:hover {
-    border-color: #444444;
-    color: var(--color-white);
-  }
-
-  .checkbox-group {
-    flex-direction: row;
-    align-items: center;
-    margin-top: 8px;
-  }
-  .checkbox-label {
-    color: var(--color-white);
-    font-size: 12px;
-    margin-left: 8px;
-    cursor: pointer;
-  }
-
-  .form-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--color-border);
-  }
-  .status-msg {
-    color: var(--color-red);
-    font-size: 11px;
-  }
-
-  /* === DETAIL PANEL === */
-  .detail-body {
-    font-size: 12px;
-    color: var(--color-white);
-  }
-  .detail-row {
-    display: grid;
-    grid-template-columns: 150px 1fr;
-    border-bottom: 1px solid var(--color-border);
-    padding: 8px 0;
-  }
-  .detail-row:last-child {
-    border-bottom: none;
-  }
-  .detail-label {
-    color: var(--color-muted);
-  }
-  .detail-photo {
-    max-width: 100%;
-    height: auto;
-    border: 1px solid var(--color-border);
-    margin-top: 12px;
-  }
-  .link-text {
-    color: var(--color-red);
-    text-decoration: none;
-  }
-  .link-text:hover {
-    text-decoration: underline;
-  }
-</style>
-
 <script>
-  // === CONFIG & STATE ===
-  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
-  let projectsData = []; 
-  let currentEditSlug = ""; 
+  const API   = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+  const token = () => sessionStorage.getItem("token");
 
-  // === DOM ELEMENTS ===
-  const modalAdd = document.getElementById('modal-add');
+  let projectsData = [];
+  let techStackData = [];
+  let currentEditId = null;
+
+  // === ELEMENTS ===
+  const modalAdd    = document.getElementById('modal-add');
+  const modalEdit   = document.getElementById('modal-edit');
   const modalDetail = document.getElementById('modal-detail');
-  const modalEdit = document.getElementById('modal-edit');
-  
-  const btnOpenAdd = document.getElementById('btn-open-add');
-  const btnCloseAdd = document.getElementById('btn-close-add');
-  const btnCloseDetail = document.getElementById('btn-close-detail');
-  const btnCloseEdit = document.getElementById('btn-close-edit');
-  
-  const formAddProject = document.getElementById('form-add-project');
-  const formEditProject = document.getElementById('form-edit-project');
-  
-  const addStatus = document.getElementById('add-status');
-  const editStatus = document.getElementById('edit-status');
-  
-  const projectTbody = document.getElementById('project-tbody');
+  const formAdd     = document.getElementById('form-add');
+  const formEdit    = document.getElementById('form-edit');
+  const addStatus   = document.getElementById('add-status');
+  const editStatus  = document.getElementById('edit-status');
+  const tbody       = document.getElementById('project-tbody');
   const searchInput = document.getElementById('search-input');
   const detailContent = document.getElementById('detail-content');
 
-  // === MODAL TOGGLE LOGIC ===
-  btnOpenAdd.addEventListener('click', () => modalAdd.classList.remove('disable'));
-  btnCloseAdd.addEventListener('click', () => modalAdd.classList.add('disable'));
-  btnCloseDetail.addEventListener('click', () => modalDetail.classList.add('disable'));
-  btnCloseEdit.addEventListener('click', () => modalEdit.classList.add('disable'));
-
-  document.addEventListener('keydown', (e) => {
+  // === MODAL ===
+  document.getElementById('btn-open-add').addEventListener('click', () => {
+    formAdd.reset();
+    renderTechChips('add-techstack-list', []);
+    modalAdd.classList.remove('hidden');
+  });
+  document.getElementById('btn-close-add').addEventListener('click',    () => modalAdd.classList.add('hidden'));
+  document.getElementById('btn-close-edit').addEventListener('click',   () => modalEdit.classList.add('hidden'));
+  document.getElementById('btn-close-detail').addEventListener('click', () => modalDetail.classList.add('hidden'));
+  document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      modalAdd.classList.add('disable');
-      modalDetail.classList.add('disable');
-      modalEdit.classList.add('disable');
+      modalAdd.classList.add('hidden');
+      modalEdit.classList.add('hidden');
+      modalDetail.classList.add('hidden');
     }
   });
 
-  // === 1. FETCH & RENDER DATA (READ) ===
-  async function loadProjects() {
+  // === AUTO SLUG ===
+  function bindAutoSlug(form) {
+    form.title.addEventListener('input', e => {
+      form.slug.value = e.target.value
+        .toLowerCase().trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+    });
+  }
+  bindAutoSlug(formAdd);
+  bindAutoSlug(formEdit);
+
+  // === TECHSTACK CHIPS ===
+  function renderTechChips(containerId, selectedIds = []) {
+    const container = document.getElementById(containerId);
+    if (!techStackData.length) {
+      container.innerHTML = `<span class="text-muted text-[10px]">No tech stack found.</span>`;
+      return;
+    }
+    container.innerHTML = techStackData.map(t => `
+      <button type="button"
+        class="bg-[#1a1a1a] border border-[var(--color-border)] text-muted text-[10px] px-2.5 py-1 rounded-[1px] cursor-pointer uppercase transition-all hover:border-[#444] hover:text-[var(--color-white)] aria-pressed:bg-[#1e0a0b] aria-pressed:border-[var(--color-red)] aria-pressed:text-[var(--color-red)]"
+        aria-pressed="${selectedIds.includes(t.id)}"
+        data-id="${t.id}">
+        ${t.name}
+      </button>
+    `).join('');
+
+    container.querySelectorAll('[aria-pressed]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const current = chip.getAttribute('aria-pressed') === 'true';
+        chip.setAttribute('aria-pressed', current ? 'false' : 'true');
+      });
+    });
+  }
+
+  function getSelectedTechIds(containerId) {
+    return [...document.getElementById(containerId)
+      .querySelectorAll('[aria-pressed="true"]')]
+      .map(c => c.getAttribute('data-id'))
+      .join(',');
+  }
+
+  // === LOAD TECHSTACK ===
+  async function loadTechStack() {
     try {
-      projectTbody.innerHTML = `<tr><td colspan="4" class="empty-state">> FETCHING DATA...</td></tr>`;
-      
-      const res = await fetch(`${API_URL}/api/v1/project`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      
+      const res  = await fetch(`${API}/api/v1/tech-stack`);
+      techStackData = await res.json();
+    } catch {
+      techStackData = [];
+    }
+  }
+
+  // === LOAD PROJECTS ===
+  async function loadProjects() {
+    tbody.innerHTML = `<tr><td colspan="4" class="tui-empty">> FETCHING...</td></tr>`;
+    try {
+      const res = await fetch(`${API}/api/v1/project`);
+      if (!res.ok) throw new Error();
       projectsData = await res.json();
       renderTable(projectsData);
-    } catch (err) {
-      console.error(err);
-      projectTbody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: var(--color-red)">> ERROR: FAILED TO LOAD PROJECTS</td></tr>`;
+    } catch {
+      tbody.innerHTML = `<tr><td colspan="4" class="tui-empty text-[var(--color-red)]">> ERROR: FAILED TO LOAD</td></tr>`;
     }
   }
 
   function renderTable(data) {
-    if (!data || data.length === 0) {
-      projectTbody.innerHTML = `<tr><td colspan="4" class="empty-state">> NO PROJECTS FOUND.</td></tr>`;
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="tui-empty">> NO PROJECTS FOUND.</td></tr>`;
       return;
     }
-
-    projectTbody.innerHTML = data.map(proj => `
-      <tr>
-        <td><strong>${proj.title}</strong></td>
-        <td><span class="tag">${proj.tech_Stack || 'N/A'}</span></td>
-        <td>
-          <span class="tag" style="color: ${proj.published ? 'var(--color-white)' : 'var(--color-muted)'}; border-color: ${proj.published ? 'var(--color-border)' : '#333'}">
-            ${proj.published ? 'PUBLISHED' : 'DRAFT'}
-          </span>
-        </td>
-        <td>
-          <button class="btn-text btn-action" data-action="view" data-slug="${proj.slug}">[ VIEW ]</button>
-          <button class="btn-text btn-action" data-action="edit" data-slug="${proj.slug}">[ EDIT ]</button>
-          <button class="btn-text btn-action danger" data-action="delete" data-slug="${proj.slug}">[ DELETE ]</button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = data.map(p => {
+      const tags = (p.techStacks ?? []).map(t => `<span class="tag">${t.name}</span>`).join('');
+      return `
+        <tr>
+          <td><strong>${p.title}</strong></td>
+          <td>${tags || '<span class="text-muted">-</span>'}</td>
+          <td>
+            <span class="tag ${p.published ? 'text-[var(--color-white)]' : 'text-muted'}">
+              ${p.published ? 'PUBLISHED' : 'DRAFT'}
+            </span>
+          </td>
+          <td>
+            <button class="tui-action-btn btn-action" data-action="view"   data-id="${p.id}">[ VIEW ]</button>
+            <button class="tui-action-btn btn-action" data-action="edit"   data-id="${p.id}">[ EDIT ]</button>
+            <button class="tui-action-btn btn-action hover:bg-[var(--color-red)] hover:text-black hover:border-[var(--color-red)]" data-action="delete" data-id="${p.id}">[ DELETE ]</button>
+          </td>
+        </tr>`;
+    }).join('');
   }
 
-  // === 2. SEARCH FEATURE ===
-  searchInput.addEventListener('input', (e) => {
-    const keyword = e.target.value.toLowerCase();
-    const filtered = projectsData.filter(proj => 
-      proj.title.toLowerCase().includes(keyword) || 
-      (proj.tech_Stack && proj.tech_Stack.toLowerCase().includes(keyword))
-    );
-    renderTable(filtered);
+  // === SEARCH ===
+  searchInput.addEventListener('input', e => {
+    const kw = e.target.value.toLowerCase();
+    renderTable(projectsData.filter(p =>
+      p.title.toLowerCase().includes(kw) ||
+      (p.techStacks ?? []).some(t => t.name.toLowerCase().includes(kw))
+    ));
   });
 
-  // === 3. ACTION BUTTONS EVENT DELEGATION ===
-  projectTbody.addEventListener('click', async (e) => {
+  // === TABLE ACTIONS ===
+  tbody.addEventListener('click', async e => {
     if (!e.target.classList.contains('btn-action')) return;
-    
     const action = e.target.getAttribute('data-action');
-    const slug = e.target.getAttribute('data-slug');
-    const token = sessionStorage.getItem("token");
+    const id     = e.target.getAttribute('data-id');
 
-    if (action === 'view') {
-      await openDetailModal(slug);
-    } 
-    else if (action === 'delete') {
-      const confirmDel = confirm(`> WARNING: DELETE PROJECT '${slug}'? \n> THIS ACTION CANNOT BE UNDONE.`);
-      if (confirmDel) {
-        try {
-          const res = await fetch(`${API_URL}/api/v1/project/${slug}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (res.ok) loadProjects();
-          else alert("> ERROR: FAILED TO DELETE");
-        } catch (err) {
-          console.error("Error deleting:", err);
-        }
-      }
-    }
-    else if (action === 'edit') {
-      await openEditModal(slug);
-    }
+    if (action === 'view')   await openDetail(id);
+    if (action === 'edit')   await openEdit(id);
+    if (action === 'delete') await deleteProject(id);
   });
 
-  // === 4. DETAIL PROJECT (VIEW) ===
-  async function openDetailModal(slug) {
-    detailContent.innerHTML = `<div class="empty-state">> FETCHING DETAILS FOR ${slug}...</div>`;
-    modalDetail.classList.remove('disable');
+  // === VIEW DETAIL ===
+  async function openDetail(id) {
+    detailContent.innerHTML = `<div class="tui-empty">> LOADING...</div>`;
+    modalDetail.classList.remove('hidden');
     try {
-      const res = await fetch(`${API_URL}/api/v1/project/${slug}`);
-      if (!res.ok) throw new Error("Data not found");
-      const data = await res.json();
-      const photoUrl = data.photos && data.photos.startsWith('/') ? `${API_URL}${data.photos}` : data.photos;
+      const res  = await fetch(`${API}/api/v1/project/id/${id}`);
+      if (!res.ok) throw new Error();
+      const d    = await res.json();
+      const tags = (d.techStacks ?? []).map(t => `<span class="tag">${t.name}</span>`).join(' ');
+      const photos = d.photos
+        ? d.photos.split(',').map(p => `<img src="${API}${p.trim()}" class="max-w-full border border-[var(--color-border)] mt-3" />`).join('')
+        : '';
 
       detailContent.innerHTML = `
-        <div class="detail-body">
-          <div class="detail-row"><span class="detail-label">TITLE</span> <span>${data.title}</span></div>
-          <div class="detail-row"><span class="detail-label">SLUG</span> <span>${data.slug}</span></div>
-          <div class="detail-row"><span class="detail-label">STATUS</span> <span class="tag">${data.published ? 'PUBLISHED' : 'DRAFT'}</span></div>
-          <div class="detail-row"><span class="detail-label">TECH STACK</span> <span>${data.tech_Stack || '-'}</span></div>
-          <div class="detail-row"><span class="detail-label">SORT ORDER</span> <span>${data.sort_Order}</span></div>
-          <div class="detail-row">
-            <span class="detail-label">LINKS</span> 
+        <div>
+          <div class="grid grid-cols-[150px_1fr] border-b border-[var(--color-border)] py-2 text-xs"><span class="text-muted">TITLE</span><span>${d.title}</span></div>
+          <div class="grid grid-cols-[150px_1fr] border-b border-[var(--color-border)] py-2 text-xs"><span class="text-muted">SLUG</span><span>${d.slug}</span></div>
+          <div class="grid grid-cols-[150px_1fr] border-b border-[var(--color-border)] py-2 text-xs"><span class="text-muted">STATUS</span><span class="tag">${d.published ? 'PUBLISHED' : 'DRAFT'}</span></div>
+          <div class="grid grid-cols-[150px_1fr] border-b border-[var(--color-border)] py-2 text-xs"><span class="text-muted">TECH STACK</span><span>${tags || '-'}</span></div>
+          <div class="grid grid-cols-[150px_1fr] border-b border-[var(--color-border)] py-2 text-xs"><span class="text-muted">SORT ORDER</span><span>${d.sort_Order}</span></div>
+          <div class="grid grid-cols-[150px_1fr] border-b border-[var(--color-border)] py-2 text-xs">
+            <span class="text-muted">LINKS</span>
             <span>
-              ${data.repo_Url ? `<a href="${data.repo_Url}" target="_blank" class="link-text">[REPO]</a>` : '-'}
-              ${data.demo_Url ? ` <a href="${data.demo_Url}" target="_blank" class="link-text">[DEMO]</a>` : ''}
+              ${d.repo_Url ? `<a href="${d.repo_Url}" target="_blank" class="text-[var(--color-red)] no-underline hover:underline">[REPO]</a> ` : ''}
+              ${d.demo_Url ? `<a href="${d.demo_Url}" target="_blank" class="text-[var(--color-red)] no-underline hover:underline">[DEMO]</a>` : ''}
             </span>
           </div>
-          <br/>
-          <div class="detail-row" style="display: block;">
-            <div class="detail-label" style="margin-bottom: 8px;">SHORT DESCRIPTION</div>
-            <div>${data.short_Description || '-'}</div>
-          </div>
-          <div class="detail-row" style="display: block; margin-top: 12px;">
-            <div class="detail-label" style="margin-bottom: 8px;">FULL DESCRIPTION</div>
-            <div style="white-space: pre-wrap; color: var(--color-muted); line-height: 1.5;">${data.full_Description || '-'}</div>
-          </div>
-          ${photoUrl ? `
-            <div class="detail-row" style="display: block; margin-top: 16px;">
-              <div class="detail-label">PREVIEW IMAGE</div>
-              <img src="${photoUrl}" alt="Project Photo" class="detail-photo" />
-            </div>
-          ` : ''}
-        </div>
-      `;
-    } catch (err) {
-      detailContent.innerHTML = `<div class="empty-state" style="color: var(--color-red)">> ERROR: PROJECT NOT FOUND OR SERVER ERROR</div>`;
+          <div class="mt-3 text-muted text-[11px] leading-[1.7]">${d.short_Description || ''}</div>
+          <div class="mt-2 text-[11px] leading-[1.7] whitespace-pre-wrap">${d.full_Description || ''}</div>
+          ${photos}
+        </div>`;
+    } catch {
+      detailContent.innerHTML = `<div class="tui-empty text-[var(--color-red)]">> ERROR: NOT FOUND</div>`;
     }
   }
 
-  // === 5. FETCH & POPULATE FOR EDIT ===
-  async function openEditModal(slug) {
-    currentEditSlug = slug; 
-    modalEdit.classList.remove('disable');
-    formEditProject.reset();
-    
+  // === EDIT ===
+  async function openEdit(id) {
+    currentEditId = id;
+    formEdit.reset();
+    modalEdit.classList.remove('hidden');
     try {
-      const res = await fetch(`${API_URL}/api/v1/project/${slug}`);
-      if (!res.ok) throw new Error("Data not found");
-      const data = await res.json();
+      const res = await fetch(`${API}/api/v1/project/id/${id}`);
+      if (!res.ok) throw new Error();
+      const d = await res.json();
 
-      formEditProject.title.value = data.title || "";
-      formEditProject.slug.value = data.slug || "";
-      formEditProject.short_desc.value = data.short_Description || "";
-      formEditProject.full_desc.value = data.full_Description || "";
-      formEditProject.tech_stack.value = data.tech_Stack || "";
-      formEditProject.repo_url.value = data.repo_Url || "";
-      formEditProject.demo_url.value = data.demo_Url || "";
-      formEditProject.sort_order.value = data.sort_Order || 0;
-      formEditProject.published.checked = data.published;
+      formEdit.project_id.value  = d.id;
+      formEdit.title.value       = d.title        ?? '';
+      formEdit.slug.value        = d.slug         ?? '';
+      formEdit.short_desc.value  = d.short_Description ?? '';
+      formEdit.full_desc.value   = d.full_Description  ?? '';
+      formEdit.repo_url.value    = d.repo_Url     ?? '';
+      formEdit.demo_url.value    = d.demo_Url     ?? '';
+      formEdit.sort_order.value  = d.sort_Order   ?? 0;
+      formEdit.published.checked = d.published;
 
-    } catch (err) {
-      console.error(err);
-      alert("> ERROR: CANNOT FETCH PROJECT DETAILS FOR EDIT");
-      modalEdit.classList.add('disable');
+      const selectedIds = (d.techStacks ?? []).map(t => t.id);
+      renderTechChips('edit-techstack-list', selectedIds);
+    } catch {
+      alert('> ERROR: CANNOT LOAD PROJECT');
+      modalEdit.classList.add('hidden');
     }
   }
 
-  // === 6. ADD & UPDATE LOGIC (API) ===
-  async function submitProject(formEl, method = "POST", targetSlug = "") {
-    const token = sessionStorage.getItem("token");
-    const form = new FormData();
-    
-    form.append("Title",             formEl.title.value);
-    form.append("Slug",              formEl.slug.value);
-    form.append("Short_Description", formEl.short_desc.value);
-    form.append("Full_Description",  formEl.full_desc.value);
-    form.append("Tech_Stack",        formEl.tech_stack.value);
-    form.append("Repo_Url",          formEl.repo_url.value);
-    form.append("Demo_Url",          formEl.demo_url.value);
-    form.append("Sort_Order",        formEl.sort_order.value);
-    form.append("Published",         formEl.published.checked);
-
-    const files = formEl.photos.files;
-    if (files.length > 0) {
-      for (const file of files) {
-        form.append("photos", file);
-      }
-    }
-
-    const endpoint = method === "POST" 
-      ? `${API_URL}/api/v1/project` 
-      : `${API_URL}/api/v1/project/${targetSlug}`;
-
+  // === DELETE ===
+  async function deleteProject(id) {
+    if (!confirm(`> DELETE PROJECT #${id}?\n> CANNOT BE UNDONE.`)) return;
     try {
-      const res = await fetch(endpoint, {
-        method: method,
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
+      const res = await fetch(`${API}/api/v1/project/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token()}` },
       });
-
-      const data = await res.json();
-      if (!res.ok) return { success: false, data };
-      return { success: true, data };
-    } catch (err) {
-      return { success: false, err };
+      if (res.ok) loadProjects();
+      else alert('> ERROR: DELETE FAILED');
+    } catch {
+      alert('> ERROR: NETWORK ERROR');
     }
   }
 
-  // Handler: FORM ADD
-  formAddProject.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    addStatus.textContent = "> SAVING...";
-    addStatus.classList.remove('disable');
-    
-    const result = await submitProject(e.target, "POST");
-    
-    if (result.success) {
-      addStatus.textContent = "> SUCCESS: PROJECT ADDED";
-      addStatus.style.color = "var(--color-white)";
+  // === SUBMIT (ADD & EDIT) ===
+  async function submitProject(formEl, method, url, statusEl) {
+    const fd = new FormData();
+    fd.append('Title',             formEl.title.value);
+    fd.append('Slug',              formEl.slug.value);
+    fd.append('Short_Description', formEl.short_desc.value);
+    fd.append('Full_Description',  formEl.full_desc.value);
+    fd.append('Repo_Url',          formEl.repo_url.value);
+    fd.append('Demo_Url',          formEl.demo_url.value);
+    fd.append('Sort_Order',        formEl.sort_order.value);
+    fd.append('Published',         formEl.published.checked);
+
+    const containerId = method === 'POST' ? 'add-techstack-list' : 'edit-techstack-list';
+    fd.append('TechStack_Ids', getSelectedTechIds(containerId));
+
+    for (const file of formEl.photos.files) fd.append('photos', file);
+
+    statusEl.textContent = '> SAVING...';
+    statusEl.classList.remove('hidden');
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { Authorization: `Bearer ${token()}` },
+        body: fd,
+      });
+      if (!res.ok) throw new Error();
+      statusEl.textContent = '> SUCCESS';
+      statusEl.classList.remove('text-[var(--color-red)]');
+      statusEl.classList.add('text-[var(--color-white)]');
       setTimeout(() => {
-        modalAdd.classList.add('disable');
-        formAddProject.reset();
-        addStatus.classList.add('disable');
-        addStatus.style.color = "var(--color-red)";
-        loadProjects(); 
-      }, 1500);
-    } else {
-      addStatus.textContent = "> ERROR: SAVE FAILED";
-      setTimeout(() => addStatus.classList.add('disable'), 3000);
+        modalAdd.classList.add('hidden');
+        modalEdit.classList.add('hidden');
+        statusEl.classList.add('hidden');
+        statusEl.classList.remove('text-[var(--color-white)]');
+        statusEl.classList.add('text-[var(--color-red)]');
+        loadProjects();
+      }, 1200);
+    } catch {
+      statusEl.textContent = '> ERROR: FAILED';
+      setTimeout(() => statusEl.classList.add('hidden'), 3000);
     }
+  }
+
+  formAdd.addEventListener('submit', e => {
+    e.preventDefault();
+    submitProject(e.target, 'POST', `${API}/api/v1/project`, addStatus);
   });
 
-  // Handler: FORM EDIT
-  formEditProject.addEventListener('submit', async (e) => {
+  formEdit.addEventListener('submit', e => {
     e.preventDefault();
-    editStatus.textContent = "> UPDATING...";
-    editStatus.classList.remove('disable');
-    
-    const result = await submitProject(e.target, "PUT", currentEditSlug);
-    
-    if (result.success) {
-      editStatus.textContent = "> SUCCESS: PROJECT UPDATED";
-      editStatus.style.color = "var(--color-white)";
-      setTimeout(() => {
-        modalEdit.classList.add('disable');
-        formEditProject.reset();
-        editStatus.classList.add('disable');
-        editStatus.style.color = "var(--color-red)";
-        loadProjects(); 
-      }, 1500);
-    } else {
-      editStatus.textContent = "> ERROR: UPDATE FAILED";
-      setTimeout(() => editStatus.classList.add('disable'), 3000);
-    }
+    submitProject(e.target, 'PUT', `${API}/api/v1/project/${currentEditId}`, editStatus);
   });
 
   // === INIT ===
-  document.addEventListener('DOMContentLoaded', () => {
-    loadProjects();
-  });
+  await loadTechStack();
+  loadProjects();
 </script>

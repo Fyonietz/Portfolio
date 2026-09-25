@@ -1,0 +1,160 @@
+ ---
+// src/pages/achievement/[slug].astro
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+  try {
+    const res = await fetch(`${API_URL}/api/v1/achievement`);
+    if (!res.ok) throw new Error("Gagal fetch data");
+    const achievements = await res.json();
+    return achievements.map((ach) => ({
+      params: { slug: ach.slug },
+      props: { achievementData: ach },
+    }));
+  } catch (error) {
+    return [{ params: { slug: "fallback-achievement" }, props: { achievementData: null } }];
+  }
+}
+
+const { slug } = Astro.params;
+const { achievementData } = Astro.props;
+const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+
+const ach = achievementData;
+const isError = !ach;
+
+// Parsing properti (mendukung camelCase atau snake_case)
+const aTitle = ach?.title || 'UNKNOWN_ACHIEVEMENT';
+const aDesc = ach?.description || 'No detailed record found in system logs.';
+const aDateStr = ach?.achievedAt || ach?.achieved_At;
+const aDate = aDateStr ? new Date(aDateStr).toLocaleDateString('en-CA') : 'UNKNOWN_DATE';
+const aPhotoUrl = ach?.photoUrl || ach?.photo_Url;
+const aSortOrder = ach?.sortOrder || ach?.sort_Order || 0;
+
+const getImageUrl = (url) => url.startsWith('/') ? `${API_URL}${url}` : url;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{aTitle} | Achievement Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <style is:global>
+      :root {
+        --color-bg: #111111;
+        --color-surface: #141414;
+        --color-border: #333333;
+        --color-red: #e63946;
+        --color-white: #f0f0f0;
+        --color-muted: #888888;
+      }
+      body {
+        font-family: 'Share Tech Mono', monospace;
+        background-color: var(--color-bg);
+        color: var(--color-white);
+      }
+      .cursor-blink { animation: blink 1s step-end infinite; }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: var(--color-bg); border-left: 1px solid var(--color-border); }
+      ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 0px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--color-red); }
+    </style>
+  </head>
+  <body class="text-[14px] leading-[1.7] min-h-screen selection:bg-[var(--color-red)] selection:text-black">
+    
+    <main class="max-w-5xl mx-auto border-x border-[var(--color-border)] min-h-screen flex flex-col bg-[var(--color-bg)]">
+      
+      {isError ? (
+        <div class="p-8 text-center min-h-screen flex flex-col justify-center items-center">
+          <div class="text-[var(--color-red)] text-3xl mb-4 font-bold tracking-widest">FATAL ERROR: 404</div>
+          <div class="text-[var(--color-muted)] text-[14px]">> SYSTEM UNABLE TO LOCATE LOG ARCHIVE '{slug}'</div>
+          <a href="/" class="inline-block mt-8 border border-[var(--color-border)] px-6 py-3 hover:border-[var(--color-red)] hover:text-[var(--color-red)] transition-colors text-[13px] uppercase tracking-wider font-bold">
+            [ESC] RETURN_TO_ROOT
+          </a>
+        </div>
+      ) : (
+        <>
+          <!-- HEADER / BREADCRUMB -->
+          <header class="border-b border-[var(--color-border)] p-[2rem] bg-[var(--color-surface)] flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+            <div>
+              <div class="text-[var(--color-muted)] text-[11px] uppercase tracking-wider mb-4 leading-[1]">
+                <a href="/" class="hover:text-[var(--color-red)] transition-colors">~/root</a> > 
+                <a href="/#achievements" class="hover:text-[var(--color-red)] transition-colors">achievements</a> > 
+                <span class="text-[var(--color-white)]">{slug}</span>
+              </div>
+              <h1 class="text-[32px] md:text-[40px] tracking-[2px] uppercase text-[var(--color-white)] leading-none flex items-center font-bold">
+                {aTitle}
+                <span class="inline-block w-[14px] h-[34px] md:h-[40px] bg-[var(--color-red)] ml-4 cursor-blink"></span>
+              </h1>
+            </div>
+            <div class="flex gap-4">
+              <a href="/" class="text-[var(--color-muted)] text-[11px] uppercase border border-[var(--color-border)] px-5 py-2.5 rounded-[2px] hover:text-[var(--color-red)] hover:border-[var(--color-red)] transition-colors leading-[1] font-bold">
+                <- [ BACK_TO_ROOT ]
+              </a>
+            </div>
+          </header>
+
+          <!-- CONTENT GRID -->
+          <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-0">
+            
+            <!-- LEFT COLUMN (Visual & Desc) -->
+            <div class="border-b lg:border-b-0 lg:border-r border-[var(--color-border)] flex flex-col">
+              
+              <!-- IMAGE VIEWER (Hanya muncul jika ada foto) -->
+              {aPhotoUrl && (
+                <div class="p-[2rem] border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+                  <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-5">// ATTACHED_EVIDENCE</div>
+                  <div class="border border-[var(--color-border)] bg-[var(--color-bg)] p-3 rounded-[2px] relative group shadow-lg">
+                    <div class="absolute top-5 left-5 bg-[var(--color-bg)]/85 text-[var(--color-white)] text-[11px] px-3 py-1.5 border border-[var(--color-border)] backdrop-blur-sm leading-[1] z-10 font-bold uppercase tracking-widest">
+                      IMG_RENDER_VIEW
+                    </div>
+                    <img 
+                      src={getImageUrl(aPhotoUrl)} 
+                      alt={aTitle} 
+                      class="w-full object-cover max-h-[500px] rounded-[1px] grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 border border-[var(--color-border)] relative z-0"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <!-- FULL DESCRIPTION -->
+              <div class="p-[2rem] bg-[var(--color-bg)] flex-1">
+                <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-6">// LOG_RECORD_DETAILS</div>
+                <div class="prose prose-invert max-w-none text-[14px] text-[var(--color-white)] leading-[1.8] whitespace-pre-wrap">
+                  {aDesc}
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN: SIDEBAR PROPERTIES -->
+            <div class="bg-[var(--color-surface)] flex flex-col">
+              <div class="p-[2rem]">
+                <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-6">// EVENT_PROPERTIES</div>
+                
+                <div class="flex flex-col text-[13px]">
+                  <div class="flex py-4 border-b border-[var(--color-border)] items-center">
+                    <span class="w-[120px] text-[var(--color-muted)] text-[11px] uppercase tracking-widest">DATE_LOGGED</span>
+                    <span class="text-[var(--color-white)] font-bold">{aDate}</span>
+                  </div>
+                  <div class="flex py-4 border-b border-[var(--color-border)] items-center">
+                    <span class="w-[120px] text-[var(--color-muted)] text-[11px] uppercase tracking-widest">SYS_SLUG</span>
+                    <span class="text-[var(--color-white)] truncate" title={slug}>{slug}</span>
+                  </div>
+                  <div class="flex py-4 border-b border-[var(--color-border)] items-center">
+                    <span class="w-[120px] text-[var(--color-muted)] text-[11px] uppercase tracking-widest">PRIORITY_IDX</span>
+                    <span class="text-[var(--color-white)] font-bold">{aSortOrder}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </>
+      )}
+    </main>
+  </body>
+</html>

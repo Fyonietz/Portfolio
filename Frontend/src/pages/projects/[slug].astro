@@ -1,0 +1,275 @@
+---
+// src/pages/projects/[slug].astro
+import '../../styles/global.css';
+
+// 1. GENERATE STATIC PATHS UNTUK SEMUA PROJECT
+export async function getStaticPaths() {
+  const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+  try {
+    const res = await fetch(`${API_URL}/api/v1/project`);
+    if (!res.ok) throw new Error("Gagal fetch data");
+    const projects = await res.json();
+    return projects.map((project) => ({
+      params: { slug: project.slug },
+      props: { projectData: project }, // Kirim data lewat props agar tidak fetch 2x
+    }));
+  } catch (error) {
+    // Fallback darurat jika backend mati saat proses build
+    return [{ params: { slug: "fallback-project" }, props: { projectData: null } }];
+  }
+}
+
+const { slug } = Astro.params;
+const { projectData } = Astro.props;
+const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+
+const project = projectData;
+const isError = !project;
+
+// 2. ROBUST DATA PARSING (Menangani camelCase dari API Contract atau fallback snake_case)
+const photos = project && project.photos ? project.photos.split(',').map(p => p.trim()) : [];
+
+let techList = [];
+if (project?.techStacks && Array.isArray(project.techStacks)) {
+  techList = project.techStacks.map(t => t.name); // Dari API Contract baru (Array of Objects)
+} else if (project?.tech_Stack) {
+  techList = project.tech_Stack.split(',').map(t => t.trim()); // Fallback string CSV lama
+}
+
+const pTitle = project?.title || 'UNKNOWN_MODULE';
+const pShortDesc = project?.shortDescription || project?.short_Description || '';
+const pFullDesc = project?.fullDescription || project?.full_Description || 'No detailed specification provided in system.';
+const pRepoUrl = project?.repoUrl || project?.repo_Url;
+const pDemoUrl = project?.demoUrl || project?.demo_Url;
+const pPublished = project?.published;
+const pSortOrder = project?.sortOrder || project?.sort_Order || 0;
+
+const getImageUrl = (url) => url.startsWith('/') ? `${API_URL}${url}` : url;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pTitle} | Project Detail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <style is:global>
+      /* OVERRIDE RULES BARU */
+      :root {
+        --color-bg: #111111;
+        --color-surface: #141414;
+        --color-border: #333333;
+        --color-red: #e63946;
+        --color-white: #f0f0f0;
+        --color-muted: #888888;
+      }
+
+      body {
+        font-family: 'Share Tech Mono', monospace;
+        background-color: var(--color-bg);
+        color: var(--color-white);
+      }
+      .cursor-blink { animation: blink 1s step-end infinite; }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+      /* Custom scrollbar TUI */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: var(--color-bg); border-left: 1px solid var(--color-border); }
+      ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 0px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--color-red); }
+    </style>
+  </head>
+  <!-- BASE FONT 14px, LINE HEIGHT 1.7 -->
+  <body class="text-[14px] leading-[1.7] min-h-screen selection:bg-[var(--color-red)] selection:text-black">
+    
+    <main class="max-w-5xl mx-auto border-x border-[var(--color-border)] min-h-screen flex flex-col bg-[var(--color-bg)]">
+      
+      {isError ? (
+        <div class="p-8 text-center min-h-screen flex flex-col justify-center items-center">
+          <div class="text-[var(--color-red)] text-3xl mb-4 font-bold tracking-widest">FATAL ERROR: 404</div>
+          <div class="text-[var(--color-muted)] text-[14px]">> SYSTEM UNABLE TO LOCATE PROJECT ARCHIVE '{slug}'</div>
+          <a href="/" class="inline-block mt-8 border border-[var(--color-border)] px-6 py-3 hover:border-[var(--color-red)] hover:text-[var(--color-red)] transition-colors text-[13px] uppercase tracking-wider">
+            [ESC] RETURN_TO_ROOT
+          </a>
+        </div>
+      ) : (
+        <>
+          <!-- ==============================================
+               HEADER / BREADCRUMB
+               ============================================== -->
+          <header class="border-b border-[var(--color-border)] p-[2rem] bg-[var(--color-surface)] flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+            <div>
+              <div class="text-[var(--color-muted)] text-[11px] uppercase tracking-wider mb-4 leading-[1]">
+                <a href="/" class="hover:text-[var(--color-red)] transition-colors">~/root</a> > 
+                <a href="/#projects" class="hover:text-[var(--color-red)] transition-colors">projects</a> > 
+                <span class="text-[var(--color-white)]">{slug}</span>
+              </div>
+              <h1 class="text-[32px] md:text-[40px] tracking-[2px] uppercase text-[var(--color-white)] leading-none flex items-center font-bold">
+                {pTitle}
+                <span class="inline-block w-[14px] h-[34px] md:h-[40px] bg-[var(--color-red)] ml-4 cursor-blink"></span>
+              </h1>
+            </div>
+            <div class="flex gap-4">
+              <a href="/#projects" class="text-[var(--color-muted)] text-[11px] uppercase border border-[var(--color-border)] px-5 py-2.5 rounded-[2px] hover:text-[var(--color-red)] hover:border-[var(--color-red)] transition-colors leading-[1] font-bold">
+                <- [ BACK ]
+              </a>
+            </div>
+          </header>
+
+          <!-- ==============================================
+               CONTENT GRID
+               ============================================== -->
+          <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-0">
+            
+            <!-- LEFT COLUMN -->
+            <div class="border-b lg:border-b-0 lg:border-r border-[var(--color-border)] flex flex-col">
+              
+              <!-- IMAGE VIEWER -->
+              <div class="p-[2rem] border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+                <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-5">// VISUAL_OUTPUT</div>
+                
+                {photos.length > 0 ? (
+                  <div class="flex flex-col gap-4">
+                    <!-- Main Image Frame -->
+                    <div class="border border-[var(--color-border)] bg-[var(--color-bg)] p-3 rounded-[2px] relative group shadow-lg">
+                      <div class="absolute top-5 left-5 bg-[var(--color-bg)]/85 text-[var(--color-white)] text-[11px] px-3 py-1.5 border border-[var(--color-border)] backdrop-blur-sm leading-[1] z-10 font-bold uppercase tracking-widest">
+                        IMG_RENDER_VIEW
+                      </div>
+                      <img 
+                        id="main-viewer" 
+                        src={getImageUrl(photos[0])} 
+                        alt="Project Capture" 
+                        class="w-full aspect-video object-cover rounded-[1px] grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 border border-[var(--color-border)] relative z-0"
+                      />
+                    </div>
+                    
+                    <!-- Thumbnails / Multi-Document Support -->
+                    {photos.length > 1 && (
+                      <div class="flex gap-3 overflow-x-auto py-2">
+                        {photos.map((photo, index) => (
+                          <button 
+                            class={`thumb-btn shrink-0 w-32 aspect-video border-[2px] ${index === 0 ? 'border-[var(--color-red)]' : 'border-[var(--color-border)] opacity-50'} hover:opacity-100 transition-all rounded-[2px] overflow-hidden`}
+                            data-src={getImageUrl(photo)}
+                          >
+                            <img src={getImageUrl(photo)} class="w-full h-full object-cover" alt={`Doc ${index + 1}`} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div class="border dashed border-[var(--color-border)] h-[350px] flex items-center justify-center text-[var(--color-muted)] text-[13px] uppercase">
+                    [ NO_VISUAL_DATA_FOUND ]
+                  </div>
+                )}
+              </div>
+
+              <!-- FULL DESCRIPTION -->
+              <div class="p-[2rem] bg-[var(--color-bg)] flex-1">
+                <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-6">// DETAILED_SPECIFICATION</div>
+                <!-- Line height 1.8 dan text color white sesuai rules -->
+                <div class="prose prose-invert max-w-none text-[14px] text-[var(--color-white)] leading-[1.8] whitespace-pre-wrap">
+                  {pFullDesc}
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN: SIDEBAR -->
+            <div class="bg-[var(--color-surface)] flex flex-col">
+              
+              <!-- SYS LOG / SHORT DESC -->
+              <div class="p-[2rem] border-b border-[var(--color-border)] bg-[#171717]">
+                <div class="text-[var(--color-muted)] text-[11px] uppercase mb-4 leading-[1] tracking-widest">>> INIT_SEQUENCE</div>
+                <p class="text-[var(--color-white)] text-[14px] italic border-l-2 border-[var(--color-red)] pl-4 py-2 leading-[1.7]">
+                  "{pShortDesc}"
+                </p>
+              </div>
+
+              <!-- ACTIONS (BUTTONS) -->
+              <div class="p-[2rem] border-b border-[var(--color-border)] flex flex-col gap-4 bg-[var(--color-surface)]">
+                {pDemoUrl ? (
+                  <a href={pDemoUrl} target="_blank" rel="noopener noreferrer" class="text-center bg-[var(--color-red)]/10 border border-[var(--color-red)] text-[var(--color-red)] px-5 py-3.5 text-[13px] uppercase tracking-wider hover:bg-[var(--color-red)] hover:text-[#000] transition-colors rounded-[2px] font-bold shadow-[0_0_15px_rgba(230,57,70,0.15)]">
+                    [ EXECUTE_LIVE_DEMO ]
+                  </a>
+                ) : (
+                  <button disabled class="text-center bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-muted)] px-5 py-3.5 text-[13px] uppercase tracking-wider cursor-not-allowed rounded-[2px]">
+                    [ DEMO_UNAVAILABLE ]
+                  </button>
+                )}
+                
+                {pRepoUrl && (
+                  <a href={pRepoUrl} target="_blank" rel="noopener noreferrer" class="text-center bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-white)] px-5 py-3.5 text-[13px] uppercase tracking-wider hover:border-[#555] hover:bg-[#1a1a1a] transition-colors rounded-[2px] font-bold">
+                    [ INSPECT_SOURCE_CODE ]
+                  </a>
+                )}
+              </div>
+
+              <!-- DATA SHEET / PROPERTIES -->
+              <div class="p-[2rem]">
+                <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-6">// SYS_PROPERTIES</div>
+                
+                <div class="flex flex-col text-[13px]">
+                  <div class="flex py-4 border-b border-[var(--color-border)] items-center">
+                    <span class="w-[120px] text-[var(--color-muted)] text-[11px] uppercase tracking-widest">STATUS</span>
+                    <span class="text-[var(--color-white)] uppercase font-bold">{pPublished ? 'ONLINE' : 'OFFLINE'}</span>
+                  </div>
+                  <div class="flex py-4 border-b border-[var(--color-border)] items-center">
+                    <span class="w-[120px] text-[var(--color-muted)] text-[11px] uppercase tracking-widest">SORT_IDX</span>
+                    <span class="text-[var(--color-white)] font-bold">{pSortOrder}</span>
+                  </div>
+                  
+                  <div class="py-6">
+                    <span class="block text-[var(--color-muted)] mb-5 text-[11px] leading-[1] uppercase tracking-widest">DEPENDENCIES / TECH_STACK</span>
+                    <div class="flex flex-wrap gap-[10px]">
+                      {techList.length > 0 ? techList.map((tech) => (
+                        <span class="bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-red)] text-[11px] px-[10px] py-[4px] rounded-[1px] uppercase leading-[1]">
+                          {tech}
+                        </span>
+                      )) : (
+                        <span class="text-[var(--color-muted)] text-[11px]">[NO_DEPENDENCIES_LOGGED]</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </>
+      )}
+    </main>
+    
+    <!-- INTERACTIVE SCRIPT: TUI Image Viewer Flicker Effect -->
+    <script>
+      const mainViewer = document.getElementById('main-viewer');
+      const thumbBtns = document.querySelectorAll('.thumb-btn');
+
+      if (mainViewer && thumbBtns.length > 0) {
+        thumbBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const src = btn.getAttribute('data-src');
+            
+            // Effect: Matrix/CRT Flicker
+            mainViewer.style.opacity = '0';
+            mainViewer.style.filter = 'brightness(200%) grayscale(100%)';
+            
+            setTimeout(() => {
+              mainViewer.src = src;
+              mainViewer.style.opacity = '1';
+              mainViewer.style.filter = 'brightness(100%) grayscale(20%)';
+            }, 100);
+
+            // Update border states
+            thumbBtns.forEach(b => {
+              b.classList.remove('border-[var(--color-red)]');
+              b.classList.add('border-[var(--color-border)]', 'opacity-50');
+            });
+            btn.classList.add('border-[var(--color-red)]');
+            btn.classList.remove('border-[var(--color-border)]', 'opacity-50');
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

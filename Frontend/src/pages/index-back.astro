@@ -1,0 +1,2949 @@
+---
+// src/pages/index.astro
+
+import '../styles/global.css';
+
+const API_URL = import.meta.env.PUBLIC_BACKEND || "http://localhost:3000";
+
+let profile = null;
+let contacts = [];
+let projects = [];
+let achievements = [];
+let skills = [];
+let techStacks = [];
+
+let errorProfile = false;
+let errorContacts = false;
+let errorProjects = false;
+let errorAchievements = false;
+let errorSkills = false;
+let errorTechStack = false;
+
+// ============================================================
+// DATA FETCHING
+// ============================================================
+
+try {
+  const res = await fetch(`${API_URL}/api/v1/profile`);
+
+  if (res.ok) {
+    const data = await res.json();
+
+    profile = Array.isArray(data) && data.length > 0
+      ? data[0]
+      : (data?.id ? data : null);
+
+    if (!profile) errorProfile = true;
+  } else {
+    errorProfile = true;
+  }
+} catch {
+  errorProfile = true;
+}
+
+const pPhoto = profile?.photoUrl || profile?.photo_Url;
+const pRole = profile?.roleTitle || profile?.role_Title;
+const pBio = profile?.bio;
+const pDesc = profile?.description;
+
+try {
+  const res = await fetch(`${API_URL}/api/v1/contact`);
+
+  if (res.ok) {
+    contacts = await res.json();
+
+    contacts.sort(
+      (a, b) =>
+        (a.sortOrder || a.sort_Order || 0) -
+        (b.sortOrder || b.sort_Order || 0)
+    );
+  } else if (res.status !== 404) {
+    errorContacts = true;
+  }
+} catch {
+  errorContacts = true;
+}
+
+try {
+  const res = await fetch(`${API_URL}/api/v1/skill`);
+
+  if (res.ok) {
+    const data = await res.json();
+
+    skills = data
+      .filter((s) => s.published !== false)
+      .sort(
+        (a, b) =>
+          (a.sortOrder || a.sort_Order || 0) -
+          (b.sortOrder || b.sort_Order || 0)
+      );
+  } else if (res.status !== 404) {
+    errorSkills = true;
+  }
+} catch {
+  errorSkills = true;
+}
+
+try {
+  const res = await fetch(`${API_URL}/api/v1/tech-stack`);
+
+  if (res.ok) {
+    const data = await res.json();
+
+    techStacks = Array.isArray(data)
+      ? data
+          .filter(
+            (item) =>
+              item &&
+              (item.name || item.icon_Url || item.iconUrl)
+          )
+          .sort(
+            (a, b) =>
+              (a.sort_Order || a.sortOrder || 0) -
+              (b.sort_Order || b.sortOrder || 0)
+          )
+      : [];
+  } else if (res.status !== 404) {
+    errorTechStack = true;
+  }
+} catch {
+  errorTechStack = true;
+}
+
+const skillsByCategory = skills.reduce((acc, skill) => {
+  const cat = (skill.category || 'UNMAPPED').toUpperCase();
+
+  if (!acc[cat]) {
+    acc[cat] = [];
+  }
+
+  acc[cat].push(skill);
+
+  return acc;
+}, {});
+
+const skillCategories = Object.entries(skillsByCategory);
+
+try {
+  const res = await fetch(`${API_URL}/api/v1/project`);
+
+  if (res.ok) {
+    const data = await res.json();
+
+    projects = data
+      .filter((p) => p.published !== false)
+      .sort(
+        (a, b) =>
+          (a.sortOrder || a.sort_Order || 0) -
+          (b.sortOrder || b.sort_Order || 0)
+      );
+  } else if (res.status !== 404) {
+    errorProjects = true;
+  }
+} catch {
+  errorProjects = true;
+}
+
+try {
+  const res = await fetch(`${API_URL}/api/v1/achievement`);
+
+  if (res.ok) {
+    achievements = await res.json();
+
+    achievements.sort(
+      (a, b) =>
+        (a.sortOrder || a.sort_Order || 0) -
+        (b.sortOrder || b.sort_Order || 0)
+    );
+  } else if (res.status !== 404) {
+    errorAchievements = true;
+  }
+} catch {
+  errorAchievements = true;
+}
+
+const totalSkills = skills.length;
+const totalProjects = projects.length;
+const totalAchievements = achievements.length;
+const totalTech = techStacks.length;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>
+      {profile ? profile.name : 'Terminal'} | Portfolio
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+
+    <style is:global>
+      .animate-blink {
+        animation: blink 1s step-end infinite;
+      }
+
+      @keyframes blink {
+        0%, 100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes scan {
+        from {
+          transform: translateY(-100%);
+        }
+
+        to {
+          transform: translateY(100vh);
+        }
+      }
+
+      .terminal-scanline {
+        animation: scan 8s linear infinite;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.35);
+        }
+
+        70% {
+          box-shadow: 0 0 0 8px rgba(230, 57, 70, 0);
+        }
+
+        100% {
+          box-shadow: 0 0 0 0 rgba(230, 57, 70, 0);
+        }
+      }
+
+      .pulse-ring {
+        animation: pulse-ring 2s infinite;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      ::selection {
+        background: #e63946;
+        color: #000;
+      }
+    </style>
+  </head>
+
+  <body
+    class="
+      bg-[var(--color-bg)]
+      text-[14px]
+      leading-[1.7]
+      text-[var(--color-white)]
+      selection:bg-[var(--color-red)]
+      selection:text-black
+      overflow-x-hidden
+    "
+  >
+
+    <!-- =====================================================
+         BACKGROUND SYSTEM GRID
+         ===================================================== -->
+
+    <div
+      class="
+        fixed inset-0
+        pointer-events-none
+        opacity-[0.035]
+        bg-[linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)]
+        bg-[size:32px_32px]
+        z-0
+      "
+    ></div>
+
+    <div
+      class="
+        fixed
+        inset-x-0
+        top-0
+        h-px
+        bg-gradient-to-r
+        from-transparent
+        via-[var(--color-red)]
+        to-transparent
+        opacity-40
+        pointer-events-none
+        z-50
+      "
+    ></div>
+
+    <main
+      class="
+        relative
+        z-10
+        w-full
+        max-w-[1500px]
+        mx-auto
+        min-h-screen
+        border-x
+        border-[var(--color-border)]
+        bg-[var(--color-bg)]
+        shadow-[0_0_80px_rgba(0,0,0,0.35)]
+      "
+    >
+
+      <!-- =====================================================
+           TERMINAL TOP BAR
+           ===================================================== -->
+
+      <header
+        class="
+          sticky
+          top-0
+          z-40
+          border-b
+          border-[var(--color-border)]
+          bg-[rgba(10,10,10,0.94)]
+          backdrop-blur-md
+        "
+      >
+        <div
+          class="
+            flex
+            min-h-[48px]
+            items-center
+            justify-between
+            gap-4
+            px-4
+            md:px-6
+            overflow-x-auto
+          "
+        >
+
+          <div class="flex items-center gap-3 shrink-0">
+
+            <div class="flex gap-1.5">
+              <span
+                class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"
+              ></span>
+
+              <span
+                class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"
+              ></span>
+
+              <span
+                class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"
+              ></span>
+            </div>
+
+            <div
+              class="
+                hidden
+                sm:block
+                text-[11px]
+                uppercase
+                tracking-[0.18em]
+                text-[var(--color-muted)]
+              "
+            >
+              sys@portfolio
+            </div>
+
+            <span class="text-[var(--color-border)]">/</span>
+
+            <span
+              class="
+                text-[11px]
+                uppercase
+                tracking-[0.18em]
+                text-[var(--color-red)]
+              "
+            >
+              workspace
+            </span>
+          </div>
+
+          <nav
+            class="
+              flex
+              items-center
+              gap-1
+              shrink-0
+              text-[10px]
+              uppercase
+              tracking-[0.16em]
+            "
+          >
+            <a
+              href="#overview"
+              class="
+                px-3
+                py-2
+                text-[var(--color-muted)]
+                hover:bg-[var(--color-red)]
+                hover:text-black
+                transition-colors
+              "
+            >
+              overview
+            </a>
+
+            <a
+              href="#skills"
+              class="
+                px-3
+                py-2
+                text-[var(--color-muted)]
+                hover:bg-[var(--color-red)]
+                hover:text-black
+                transition-colors
+              "
+            >
+              skills
+            </a>
+
+            <a
+              href="#projects"
+              class="
+                px-3
+                py-2
+                text-[var(--color-muted)]
+                hover:bg-[var(--color-red)]
+                hover:text-black
+                transition-colors
+              "
+            >
+              projects
+            </a>
+
+            <a
+              href="#logs"
+              class="
+                px-3
+                py-2
+                text-[var(--color-muted)]
+                hover:bg-[var(--color-red)]
+                hover:text-black
+                transition-colors
+              "
+            >
+              logs
+            </a>
+          </nav>
+
+          <div
+            class="
+              hidden
+              lg:flex
+              items-center
+              gap-2
+              shrink-0
+              text-[10px]
+              uppercase
+              tracking-widest
+              text-[var(--color-muted)]
+            "
+          >
+            <span
+              class="
+                w-2
+                h-2
+                rounded-full
+                bg-[var(--color-red)]
+                pulse-ring
+              "
+            ></span>
+
+            <span>
+              {profile?.status || 'ONLINE'}
+            </span>
+
+            <span class="text-[var(--color-border)]">|</span>
+
+            <span id="terminal-clock">
+              --:--:--
+            </span>
+          </div>
+
+        </div>
+      </header>
+
+
+      <!-- =====================================================
+           OVERVIEW / HERO
+           ===================================================== -->
+
+      <section
+        id="overview"
+        class="
+          relative
+          border-b
+          border-[var(--color-border)]
+          overflow-hidden
+        "
+      >
+
+        <div
+          class="
+            absolute
+            inset-0
+            pointer-events-none
+            opacity-50
+            bg-[radial-gradient(circle_at_20%_20%,rgba(230,57,70,0.10),transparent_28%),radial-gradient(circle_at_90%_80%,rgba(230,57,70,0.07),transparent_25%)]
+          "
+        ></div>
+
+        <div
+          class="
+            absolute
+            inset-x-0
+            h-px
+            top-1/2
+            bg-gradient-to-r
+            from-transparent
+            via-[var(--color-red)]
+            to-transparent
+            opacity-20
+            terminal-scanline
+            pointer-events-none
+          "
+        ></div>
+
+        <div class="relative">
+
+          <!-- command header -->
+
+          <div
+            class="
+              flex
+              flex-wrap
+              items-center
+              justify-between
+              gap-3
+              border-b
+              border-[var(--color-border)]
+              px-4
+              py-3
+              md:px-6
+              bg-[rgba(255,255,255,0.015)]
+            "
+          >
+            <div
+              class="
+                flex
+                items-center
+                gap-2
+                text-[10px]
+                uppercase
+                tracking-[0.2em]
+                text-[var(--color-muted)]
+              "
+            >
+              <span class="text-[var(--color-red)]">01</span>
+              <span>/</span>
+              <span>identity.module</span>
+              <span class="text-[var(--color-border)]">::</span>
+              <span class="text-[var(--color-white)]">
+                initialized
+              </span>
+            </div>
+
+            <div
+              class="
+                text-[10px]
+                uppercase
+                tracking-[0.15em]
+                text-[var(--color-muted)]
+              "
+            >
+              access_level:
+              <span class="text-[var(--color-red)]">
+                ROOT
+              </span>
+            </div>
+          </div>
+
+
+          <!-- HERO CONTENT -->
+
+          <div
+            class="
+              grid
+              grid-cols-1
+              xl:grid-cols-[300px_minmax(0,1fr)_260px]
+              gap-0
+            "
+          >
+
+            <!-- PROFILE -->
+
+            <div
+              class="
+                relative
+                border-b
+                xl:border-b-0
+                xl:border-r
+                border-[var(--color-border)]
+                p-5
+                md:p-6
+                bg-[rgba(255,255,255,0.012)]
+              "
+            >
+
+              <div
+                class="
+                  absolute
+                  top-0
+                  left-0
+                  w-20
+                  h-px
+                  bg-[var(--color-red)]
+                "
+              ></div>
+
+              <div
+                class="
+                  flex
+                  items-center
+                  justify-between
+                  mb-5
+                  text-[10px]
+                  uppercase
+                  tracking-[0.18em]
+                "
+              >
+                <span class="text-[var(--color-muted)]">
+                  user.profile
+                </span>
+
+                <span
+                  class="
+                    text-[var(--color-red)]
+                    border
+                    border-[var(--color-red)]
+                    px-2
+                    py-0.5
+                  "
+                >
+                  live
+                </span>
+              </div>
+
+              <div
+                class="
+                  relative
+                  aspect-square
+                  overflow-hidden
+                  border
+                  border-[var(--color-border)]
+                  bg-[var(--color-surface)]
+                  group
+                "
+              >
+
+                {pPhoto ? (
+                  <img
+                    src={
+                      pPhoto.startsWith('/')
+                        ? `${API_URL}${pPhoto}`
+                        : pPhoto
+                    }
+                    alt={profile?.name || 'Profile'}
+                    class="
+                      w-full
+                      h-full
+                      object-cover
+                      grayscale
+                      opacity-80
+                      group-hover:grayscale-0
+                      group-hover:opacity-100
+                      group-hover:scale-105
+                      transition-all
+                      duration-500
+                    "
+                  />
+                ) : (
+                  <div
+                    class="
+                      absolute
+                      inset-0
+                      flex
+                      items-center
+                      justify-center
+                      text-[11px]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    [NO_IMAGE_DATA]
+                  </div>
+                )}
+
+                <div
+                  class="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-black/70
+                    via-transparent
+                    to-transparent
+                    pointer-events-none
+                  "
+                ></div>
+
+                <div
+                  class="
+                    absolute
+                    left-3
+                    bottom-3
+                    text-[9px]
+                    uppercase
+                    tracking-[0.18em]
+                    text-white
+                  "
+                >
+                  biometric://verified
+                </div>
+              </div>
+
+              <div class="mt-4 space-y-2">
+
+                <div
+                  class="
+                    flex
+                    justify-between
+                    border-b
+                    border-[var(--color-border)]
+                    pb-2
+                    text-[10px]
+                    uppercase
+                  "
+                >
+                  <span class="text-[var(--color-muted)]">
+                    role
+                  </span>
+
+                  <span class="text-[var(--color-red)]">
+                    {pRole || 'PROFILE'}
+                  </span>
+                </div>
+
+                <div
+                  class="
+                    flex
+                    justify-between
+                    border-b
+                    border-[var(--color-border)]
+                    pb-2
+                    text-[10px]
+                    uppercase
+                  "
+                >
+                  <span class="text-[var(--color-muted)]">
+                    node
+                  </span>
+
+                  <span>
+                    127.0.0.1
+                  </span>
+                </div>
+
+                <div
+                  class="
+                    flex
+                    justify-between
+                    text-[10px]
+                    uppercase
+                  "
+                >
+                  <span class="text-[var(--color-muted)]">
+                    state
+                  </span>
+
+                  <span class="text-[#35d07f]">
+                    operational
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- MAIN INTRO -->
+
+            <div
+              class="
+                min-w-0
+                border-b
+                xl:border-b-0
+                xl:border-r
+                border-[var(--color-border)]
+                p-5
+                md:p-8
+                lg:p-10
+                flex
+                flex-col
+                justify-between
+              "
+            >
+
+              <div>
+
+                <div
+                  class="
+                    flex
+                    items-center
+                    gap-2
+                    mb-5
+                    text-[11px]
+                    uppercase
+                    tracking-[0.25em]
+                    text-[var(--color-muted)]
+                  "
+                >
+                  <span class="text-[var(--color-red)]">
+                    &gt;
+                  </span>
+
+                  user_authenticated:
+
+                  <span class="text-white">
+                    root
+                  </span>
+
+                  <span
+                    class="
+                      inline-block
+                      w-2
+                      h-2
+                      rounded-full
+                      bg-[var(--color-red)]
+                      animate-pulse
+                    "
+                  ></span>
+                </div>
+
+                <h1
+                  class="
+                    max-w-4xl
+                    text-4xl
+                    sm:text-5xl
+                    lg:text-6xl
+                    xl:text-7xl
+                    leading-[0.95]
+                    font-bold
+                    uppercase
+                    tracking-[0.04em]
+                    text-white
+                    break-words
+                  "
+                >
+                  {profile ? profile.name : 'GUEST'}
+
+                  <span
+                    class="
+                      inline-block
+                      w-3
+                      h-10
+                      sm:h-12
+                      lg:h-14
+                      bg-[var(--color-red)]
+                      ml-2
+                      align-middle
+                      animate-blink
+                    "
+                  ></span>
+                </h1>
+
+                <div
+                  class="
+                    mt-6
+                    inline-flex
+                    items-center
+                    gap-2
+                    border
+                    border-[var(--color-red)]
+                    bg-[rgba(230,57,70,0.05)]
+                    px-3
+                    py-1.5
+                    text-[10px]
+                    uppercase
+                    tracking-[0.2em]
+                    text-[var(--color-red)]
+                  "
+                >
+                  <span>&gt;_</span>
+
+                  {pRole || 'SYSTEM_OPERATOR'}
+                </div>
+
+                <div
+                  class="
+                    mt-7
+                    border-l-2
+                    border-[var(--color-red)]
+                    bg-[rgba(255,255,255,0.02)]
+                    px-5
+                    py-4
+                    max-w-3xl
+                  "
+                >
+                  <p
+                    class="
+                      text-[13px]
+                      md:text-[14px]
+                      lg:text-[15px]
+                      leading-[1.9]
+                      text-[var(--color-white)]
+                    "
+                  >
+                    {pDesc ||
+                      pBio ||
+                      'Portfolio data is currently unavailable.'}
+                  </p>
+                </div>
+
+              </div>
+
+
+              <!-- COMMANDS -->
+
+              <div class="mt-8">
+
+                <div
+                  class="
+                    flex
+                    flex-wrap
+                    gap-2
+                    mb-6
+                  "
+                >
+
+                  <a
+                    href="#projects"
+                    class="
+                      group
+                      inline-flex
+                      items-center
+                      gap-2
+                      border
+                      border-[var(--color-red)]
+                      bg-[var(--color-red)]
+                      px-4
+                      py-2.5
+                      text-[11px]
+                      font-bold
+                      uppercase
+                      tracking-[0.12em]
+                      text-black
+                      hover:bg-transparent
+                      hover:text-[var(--color-red)]
+                      transition-all
+                    "
+                  >
+                    ./view_projects
+
+                    <span
+                      class="
+                        group-hover:translate-x-1
+                        transition-transform
+                      "
+                    >
+                      →
+                    </span>
+                  </a>
+
+                  <a
+                    href="#contact"
+                    class="
+                      inline-flex
+                      items-center
+                      gap-2
+                      border
+                      border-[var(--color-border)]
+                      bg-[rgba(255,255,255,0.02)]
+                      px-4
+                      py-2.5
+                      text-[11px]
+                      uppercase
+                      tracking-[0.12em]
+                      text-white
+                      hover:border-[var(--color-red)]
+                      hover:text-[var(--color-red)]
+                      transition-colors
+                    "
+                  >
+                    ./contact
+                  </a>
+
+                  <a
+                    href="#skills"
+                    class="
+                      inline-flex
+                      items-center
+                      gap-2
+                      border
+                      border-[var(--color-border)]
+                      px-4
+                      py-2.5
+                      text-[11px]
+                      uppercase
+                      tracking-[0.12em]
+                      text-[var(--color-muted)]
+                      hover:text-white
+                      hover:border-white
+                      transition-colors
+                    "
+                  >
+                    ./capabilities
+                  </a>
+
+                </div>
+
+
+                <!-- STACK -->
+
+                <div>
+
+                  <div
+                    class="
+                      mb-2
+                      text-[9px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    detected_stack
+                  </div>
+
+                  <div
+                    class="
+                      grid
+                      grid-cols-2
+                      sm:grid-cols-3
+                      lg:grid-cols-6
+                      gap-px
+                      bg-[var(--color-border)]
+                      border
+                      border-[var(--color-border)]
+                    "
+                  >
+
+                    {
+                      techStacks.length > 0
+                        ? techStacks.slice(0, 6).map((stack) => (
+                            <div
+                              class="
+                                bg-[var(--color-bg)]
+                                px-3
+                                py-2
+                                text-[10px]
+                                uppercase
+                                truncate
+                                text-[var(--color-muted)]
+                                hover:bg-[var(--color-red)]
+                                hover:text-black
+                                transition-colors
+                              "
+                            >
+                              {stack.name}
+                            </div>
+                          ))
+                        : (
+                            <div
+                              class="
+                                col-span-full
+                                bg-[var(--color-bg)]
+                                px-3
+                                py-2
+                                text-[10px]
+                                text-[var(--color-muted)]
+                              "
+                            >
+                              [NO_STACK_DATA]
+                            </div>
+                          )
+                    }
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- SYSTEM METRICS -->
+
+            <aside
+              class="
+                flex
+                flex-col
+                bg-[rgba(255,255,255,0.01)]
+              "
+            >
+
+              <div
+                class="
+                  border-b
+                  border-[var(--color-border)]
+                  px-5
+                  py-4
+                  text-[10px]
+                  uppercase
+                  tracking-[0.2em]
+                  text-[var(--color-red)]
+                "
+              >
+                system.metrics
+              </div>
+
+              <div
+                class="
+                  grid
+                  grid-cols-2
+                  xl:grid-cols-1
+                  flex-1
+                "
+              >
+
+                <div
+                  class="
+                    border-b
+                    xl:border-b
+                    border-r
+                    xl:border-r-0
+                    border-[var(--color-border)]
+                    p-5
+                    hover:bg-[rgba(230,57,70,0.04)]
+                    transition-colors
+                  "
+                >
+                  <div
+                    class="
+                      text-[9px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    projects
+                  </div>
+
+                  <div
+                    class="
+                      mt-2
+                      text-4xl
+                      font-bold
+                      text-white
+                    "
+                  >
+                    {String(totalProjects).padStart(2, '0')}
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[9px]
+                      uppercase
+                      text-[var(--color-red)]
+                    "
+                  >
+                    executable_modules
+                  </div>
+                </div>
+
+
+                <div
+                  class="
+                    border-b
+                    xl:border-b
+                    border-[var(--color-border)]
+                    p-5
+                    hover:bg-[rgba(230,57,70,0.04)]
+                    transition-colors
+                  "
+                >
+                  <div
+                    class="
+                      text-[9px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    skills
+                  </div>
+
+                  <div
+                    class="
+                      mt-2
+                      text-4xl
+                      font-bold
+                      text-white
+                    "
+                  >
+                    {String(totalSkills).padStart(2, '0')}
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[9px]
+                      uppercase
+                      text-[var(--color-red)]
+                    "
+                  >
+                    loaded_capabilities
+                  </div>
+                </div>
+
+
+                <div
+                  class="
+                    border-r
+                    xl:border-r-0
+                    border-[var(--color-border)]
+                    p-5
+                    hover:bg-[rgba(230,57,70,0.04)]
+                    transition-colors
+                  "
+                >
+                  <div
+                    class="
+                      text-[9px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    stack
+                  </div>
+
+                  <div
+                    class="
+                      mt-2
+                      text-4xl
+                      font-bold
+                      text-white
+                    "
+                  >
+                    {String(totalTech).padStart(2, '0')}
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[9px]
+                      uppercase
+                      text-[var(--color-red)]
+                    "
+                  >
+                    technologies
+                  </div>
+                </div>
+
+
+                <div
+                  class="
+                    p-5
+                    hover:bg-[rgba(230,57,70,0.04)]
+                    transition-colors
+                  "
+                >
+                  <div
+                    class="
+                      text-[9px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    records
+                  </div>
+
+                  <div
+                    class="
+                      mt-2
+                      text-4xl
+                      font-bold
+                      text-white
+                    "
+                  >
+                    {String(totalAchievements).padStart(2, '0')}
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[9px]
+                      uppercase
+                      text-[var(--color-red)]
+                    "
+                  >
+                    achievements
+                  </div>
+                </div>
+
+              </div>
+
+            </aside>
+
+          </div>
+
+
+          <!-- TERMINAL STATUS BAR -->
+
+          <div
+            class="
+              border-t
+              border-[var(--color-border)]
+              bg-black/20
+              px-4
+              py-3
+              md:px-6
+            "
+          >
+
+            <div
+              class="
+                flex
+                items-center
+                gap-3
+                overflow-hidden
+                text-[10px]
+                font-mono
+                uppercase
+                tracking-[0.12em]
+                text-[var(--color-muted)]
+              "
+            >
+              <span class="text-[var(--color-red)]">
+                root@portfolio:~$
+              </span>
+
+              <span class="truncate">
+                ./initialize --profile --skills --projects --logs
+              </span>
+
+              <span
+                class="
+                  shrink-0
+                  w-2
+                  h-3
+                  bg-[var(--color-red)]
+                  animate-blink
+                "
+              ></span>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- =====================================================
+           SKILLS / CAPABILITIES
+           ===================================================== -->
+
+      <section
+        id="skills"
+        class="
+          border-b
+          border-[var(--color-border)]
+        "
+      >
+
+        <div
+          class="
+            flex
+            flex-wrap
+            items-center
+            justify-between
+            gap-3
+            border-b
+            border-[var(--color-border)]
+            px-4
+            py-3
+            md:px-6
+          "
+        >
+
+          <div
+            class="
+              text-[10px]
+              uppercase
+              tracking-[0.2em]
+            "
+          >
+            <span class="text-[var(--color-red)]">
+              02
+            </span>
+
+            <span class="mx-2 text-[var(--color-border)]">
+              //
+            </span>
+
+            system.capabilities
+          </div>
+
+          <div
+            class="
+              text-[9px]
+              uppercase
+              tracking-widest
+              text-[var(--color-muted)]
+            "
+          >
+            {totalSkills} modules loaded
+          </div>
+
+        </div>
+
+
+        <div
+          class="
+            grid
+            grid-cols-1
+            lg:grid-cols-[1fr_320px]
+          "
+        >
+
+          <!-- SKILLS -->
+
+          <div
+            class="
+              border-b
+              lg:border-b-0
+              lg:border-r
+              border-[var(--color-border)]
+              p-4
+              md:p-6
+            "
+          >
+
+            {
+              errorSkills || skills.length === 0 ? (
+                <div
+                  class="
+                    border
+                    border-dashed
+                    border-[var(--color-border)]
+                    p-8
+                    text-center
+                    text-[11px]
+                    text-[var(--color-muted)]
+                  "
+                >
+                  &gt; NO SKILLS DATA FOUND.
+                </div>
+              ) : (
+                <div
+                  class="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    xl:grid-cols-3
+                    gap-px
+                    bg-[var(--color-border)]
+                    border
+                    border-[var(--color-border)]
+                  "
+                >
+                  {skills.map((skill, index) => (
+                    <details
+                      class="
+                        group
+                        bg-[var(--color-bg)]
+                        open:bg-[rgba(230,57,70,0.025)]
+                        transition-colors
+                      "
+                    >
+                      <summary
+                        class="
+                          list-none
+                          cursor-pointer
+                          p-4
+                          select-none
+                        "
+                      >
+
+                        <div
+                          class="
+                            flex
+                            items-start
+                            justify-between
+                            gap-3
+                          "
+                        >
+
+                          <div class="min-w-0">
+
+                            <div
+                              class="
+                                flex
+                                items-center
+                                gap-2
+                                mb-1
+                              "
+                            >
+                              <span
+                                class="
+                                  text-[9px]
+                                  text-[var(--color-red)]
+                                "
+                              >
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
+
+                              <span
+                                class="
+                                  text-[13px]
+                                  uppercase
+                                  font-bold
+                                  truncate
+                                  text-white
+                                "
+                              >
+                                {skill.name}
+                              </span>
+                            </div>
+
+                            <div
+                              class="
+                                text-[9px]
+                                uppercase
+                                tracking-widest
+                                text-[var(--color-muted)]
+                              "
+                            >
+                              {skill.category || 'UNMAPPED'}
+                            </div>
+
+                          </div>
+
+                          <span
+                            class="
+                              shrink-0
+                              text-[10px]
+                              text-[var(--color-red)]
+                              group-open:rotate-90
+                              transition-transform
+                            "
+                          >
+                            &gt;
+                          </span>
+
+                        </div>
+
+
+                        <div
+                          class="
+                            mt-4
+                            h-1
+                            bg-[var(--color-border)]
+                            overflow-hidden
+                          "
+                        >
+                          <span
+                            class="
+                              block
+                              h-full
+                              bg-[var(--color-red)]
+                              transition-all
+                              duration-700
+                              group-hover:shadow-[0_0_12px_rgba(230,57,70,0.7)]
+                            "
+                            style={`width: ${Math.min(Number(skill.level) || 0, 100)}%`}
+                          ></span>
+                        </div>
+
+                        <div
+                          class="
+                            flex
+                            justify-between
+                            mt-2
+                            text-[9px]
+                            uppercase
+                            text-[var(--color-muted)]
+                          "
+                        >
+                          <span>
+                            proficiency
+                          </span>
+
+                          <span class="text-white">
+                            {skill.level !== undefined
+                              ? `${skill.level}%`
+                              : 'N/A'}
+                          </span>
+                        </div>
+
+                      </summary>
+
+                      <div
+                        class="
+                          border-t
+                          border-[var(--color-border)]
+                          px-4
+                          pb-4
+                          pt-3
+                          text-[11px]
+                          leading-[1.7]
+                          text-[var(--color-muted)]
+                        "
+                      >
+                        {skill.description ||
+                          'No module description available.'}
+                      </div>
+
+                    </details>
+                  ))}
+                </div>
+              )
+            }
+
+          </div>
+
+
+          <!-- STACK -->
+
+          <aside class="p-4 md:p-6">
+
+            <div
+              class="
+                mb-4
+                text-[10px]
+                uppercase
+                tracking-[0.2em]
+                text-[var(--color-red)]
+              "
+            >
+              loaded_stack
+            </div>
+
+            {
+              techStacks.length > 0 ? (
+                <div class="space-y-1">
+                  {techStacks.map((stack, index) => {
+                    const iconUrl =
+                      stack.icon_Url || stack.iconUrl;
+
+                    return (
+                      <div
+                        class="
+                          group
+                          flex
+                          items-center
+                          gap-3
+                          border
+                          border-[var(--color-border)]
+                          bg-[rgba(255,255,255,0.01)]
+                          px-3
+                          py-2
+                          hover:border-[var(--color-red)]
+                          hover:bg-[rgba(230,57,70,0.04)]
+                          transition-all
+                        "
+                      >
+
+                        <span
+                          class="
+                            text-[9px]
+                            text-[var(--color-muted)]
+                            w-5
+                          "
+                        >
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+
+                        <div
+                          class="
+                            w-7
+                            h-7
+                            shrink-0
+                            flex
+                            items-center
+                            justify-center
+                            border
+                            border-[var(--color-border)]
+                            bg-black
+                          "
+                        >
+                          {iconUrl ? (
+                            <img
+                              src={
+                                iconUrl.startsWith('/')
+                                  ? `${API_URL}${iconUrl}`
+                                  : iconUrl
+                              }
+                              alt={stack.name}
+                              class="
+                                w-5
+                                h-5
+                                object-contain
+                                grayscale
+                                group-hover:grayscale-0
+                                transition-all
+                              "
+                            />
+                          ) : (
+                            <span class="text-[8px] text-[var(--color-muted)]">
+                              {stack.name
+                                ?.slice(0, 2)
+                                .toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+
+                        <span
+                          class="
+                            flex-1
+                            truncate
+                            text-[10px]
+                            uppercase
+                            text-white
+                          "
+                        >
+                          {stack.name}
+                        </span>
+
+                        <span
+                          class="
+                            text-[9px]
+                            text-[var(--color-muted)]
+                            group-hover:text-[var(--color-red)]
+                          "
+                        >
+                          READY
+                        </span>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div class="text-[10px] text-[var(--color-muted)]">
+                  &gt; NO STACK DATA FOUND.
+                </div>
+              )
+            }
+
+          </aside>
+
+        </div>
+      </section>
+
+
+      <!-- =====================================================
+           PROJECTS
+           ===================================================== -->
+
+      <section
+        id="projects"
+        class="
+          border-b
+          border-[var(--color-border)]
+        "
+      >
+
+        <div
+          class="
+            flex
+            flex-wrap
+            items-center
+            justify-between
+            gap-3
+            border-b
+            border-[var(--color-border)]
+            px-4
+            py-3
+            md:px-6
+          "
+        >
+
+          <div
+            class="
+              text-[10px]
+              uppercase
+              tracking-[0.2em]
+            "
+          >
+            <span class="text-[var(--color-red)]">
+              03
+            </span>
+
+            <span class="mx-2 text-[var(--color-border)]">
+              //
+            </span>
+
+            executable.modules
+          </div>
+
+          <div
+            class="
+              flex
+              items-center
+              gap-2
+              text-[9px]
+              uppercase
+              text-[var(--color-muted)]
+            "
+          >
+            <span>
+              query:
+            </span>
+
+            <button
+              type="button"
+              data-filter="all"
+              class="
+                project-filter
+                border
+                border-[var(--color-red)]
+                bg-[var(--color-red)]
+                text-black
+                px-2
+                py-1
+                hover:bg-transparent
+                hover:text-[var(--color-red)]
+                transition-colors
+              "
+            >
+              all
+            </button>
+
+            <button
+              type="button"
+              data-filter="featured"
+              class="
+                project-filter
+                border
+                border-[var(--color-border)]
+                px-2
+                py-1
+                hover:border-[var(--color-red)]
+                hover:text-[var(--color-red)]
+                transition-colors
+              "
+            >
+              featured
+            </button>
+          </div>
+
+        </div>
+
+
+        {
+          errorProjects ? (
+            <div class="p-10 text-center text-[11px] text-[var(--color-muted)]">
+              &gt; ERROR: FAILED TO FETCH PROJECTS DATA.
+            </div>
+          ) : projects.length === 0 ? (
+            <div class="p-10 text-center text-[11px] text-[var(--color-muted)]">
+              &gt; NO ACTIVE PROJECTS FOUND.
+            </div>
+          ) : (
+            <div
+              id="project-grid"
+              class="
+                grid
+                grid-cols-1
+                md:grid-cols-2
+                xl:grid-cols-3
+                gap-px
+                bg-[var(--color-border)]
+              "
+            >
+
+              {projects.map((p, index) => {
+
+                const firstPhoto = p.photos
+                  ? p.photos.split(',')[0].trim()
+                  : null;
+
+                let techList = [];
+
+                if (
+                  p.techStacks &&
+                  Array.isArray(p.techStacks)
+                ) {
+                  techList = p.techStacks
+                    .map((t) => t.name)
+                    .filter(Boolean);
+                } else if (p.tech_Stack) {
+                  techList = p.tech_Stack
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter(Boolean);
+                }
+
+                const desc =
+                  p.shortDescription ||
+                  p.short_Description ||
+                  'No project description available.';
+
+                return (
+                  <article
+                    data-project-card
+                    data-featured={
+                      index === 0 ? 'true' : 'false'
+                    }
+                    class="
+                      group
+                      relative
+                      flex
+                      min-h-[420px]
+                      flex-col
+                      bg-[var(--color-bg)]
+                      p-4
+                      md:p-5
+                      overflow-hidden
+                      hover:bg-[#111]
+                      transition-colors
+                    "
+                  >
+
+                    <!-- number -->
+
+                    <div
+                      class="
+                        absolute
+                        top-0
+                        right-0
+                        border-l
+                        border-b
+                        border-[var(--color-border)]
+                        px-2
+                        py-1
+                        text-[9px]
+                        text-[var(--color-muted)]
+                        group-hover:text-[var(--color-red)]
+                        transition-colors
+                      "
+                    >
+                      MOD_{String(index + 1).padStart(2, '0')}
+                    </div>
+
+
+                    <!-- image -->
+
+                    <div
+                      class="
+                        relative
+                        h-[190px]
+                        overflow-hidden
+                        border
+                        border-[var(--color-border)]
+                        bg-[var(--color-surface)]
+                        mb-5
+                      "
+                    >
+
+                      {firstPhoto ? (
+                        <img
+                          src={
+                            firstPhoto.startsWith('/')
+                              ? `${API_URL}${firstPhoto}`
+                              : firstPhoto
+                          }
+                          alt={p.title}
+                          class="
+                            w-full
+                            h-full
+                            object-cover
+                            grayscale
+                            opacity-60
+                            group-hover:opacity-100
+                            group-hover:grayscale-0
+                            group-hover:scale-105
+                            transition-all
+                            duration-500
+                          "
+                        />
+                      ) : (
+                        <div
+                          class="
+                            absolute
+                            inset-0
+                            flex
+                            items-center
+                            justify-center
+                            text-[10px]
+                            text-[var(--color-muted)]
+                          "
+                        >
+                          [NO_IMG]
+                        </div>
+                      )}
+
+                      <div
+                        class="
+                          absolute
+                          inset-0
+                          bg-gradient-to-t
+                          from-black/70
+                          via-transparent
+                          to-transparent
+                        "
+                      ></div>
+
+                      <div
+                        class="
+                          absolute
+                          bottom-2
+                          left-2
+                          text-[8px]
+                          uppercase
+                          tracking-widest
+                          text-white
+                        "
+                      >
+                        visual.asset
+                      </div>
+
+                    </div>
+
+
+                    <!-- tags -->
+
+                    <div
+                      class="
+                        flex
+                        flex-wrap
+                        gap-1.5
+                        mb-4
+                      "
+                    >
+
+                      {techList.length > 0 ? (
+                        techList.slice(0, 5).map((tech) => (
+                          <span
+                            class="
+                              border
+                              border-[var(--color-border)]
+                              bg-black
+                              px-2
+                              py-1
+                              text-[9px]
+                              uppercase
+                              text-[var(--color-red)]
+                              group-hover:border-[var(--color-red)]
+                              transition-colors
+                            "
+                          >
+                            {tech}
+                          </span>
+                        ))
+                      ) : (
+                        <span
+                          class="
+                            text-[9px]
+                            text-[var(--color-muted)]
+                          "
+                        >
+                          NO_TECH_METADATA
+                        </span>
+                      )}
+
+                    </div>
+
+
+                    <!-- title -->
+
+                    <h3
+                      class="
+                        text-[17px]
+                        uppercase
+                        leading-tight
+                        font-bold
+                        tracking-wide
+                        text-white
+                        mb-3
+                        group-hover:text-[var(--color-red)]
+                        transition-colors
+                      "
+                    >
+                      {p.title}
+                    </h3>
+
+
+                    <!-- description -->
+
+                    <p
+                      class="
+                        text-[12px]
+                        leading-[1.8]
+                        text-[var(--color-muted)]
+                        line-clamp-4
+                      "
+                    >
+                      {desc}
+                    </p>
+
+
+                    <!-- bottom -->
+
+                    <div
+                      class="
+                        mt-auto
+                        pt-5
+                        border-t
+                        border-[var(--color-border)]
+                        flex
+                        items-center
+                        justify-between
+                        gap-3
+                      "
+                    >
+
+                      <span
+                        class="
+                          text-[9px]
+                          uppercase
+                          tracking-widest
+                          text-[var(--color-muted)]
+                        "
+                      >
+                        status:
+                        <span class="text-[#35d07f]">
+                          deployed
+                        </span>
+                      </span>
+
+                      <a
+                        href={`/projects/${p.slug}`}
+                        class="
+                          inline-flex
+                          items-center
+                          gap-2
+                          text-[10px]
+                          font-bold
+                          uppercase
+                          tracking-widest
+                          text-[var(--color-red)]
+                          hover:text-white
+                          transition-colors
+                        "
+                      >
+                        [ EXECUTE ]
+
+                        <span
+                          class="
+                            group-hover:translate-x-1
+                            transition-transform
+                          "
+                        >
+                          →
+                        </span>
+                      </a>
+
+                    </div>
+
+                  </article>
+                );
+              })}
+
+            </div>
+          )
+        }
+
+      </section>
+
+
+      <!-- =====================================================
+           CONTACT + ACHIEVEMENTS
+           ===================================================== -->
+
+      <section
+        id="logs"
+        class="
+          border-b
+          border-[var(--color-border)]
+        "
+      >
+
+        <div
+          class="
+            grid
+            grid-cols-1
+            xl:grid-cols-[1fr_330px]
+          "
+        >
+
+          <!-- ACHIEVEMENTS -->
+
+          <div
+            class="
+              border-b
+              xl:border-b-0
+              xl:border-r
+              border-[var(--color-border)]
+            "
+          >
+
+            <div
+              class="
+                border-b
+                border-[var(--color-border)]
+                px-4
+                py-3
+                md:px-6
+                text-[10px]
+                uppercase
+                tracking-[0.2em]
+              "
+            >
+              <span class="text-[var(--color-red)]">
+                04
+              </span>
+
+              <span class="mx-2 text-[var(--color-border)]">
+                //
+              </span>
+
+              system.logs
+            </div>
+
+            {
+              errorAchievements ||
+              achievements.length === 0 ? (
+                <div
+                  class="
+                    p-10
+                    text-center
+                    text-[11px]
+                    text-[var(--color-muted)]
+                  "
+                >
+                  &gt; NO RECORDS FOUND.
+                </div>
+              ) : (
+                <div>
+
+                  {achievements.map((ach, index) => {
+
+                    const achievedAt =
+                      ach.achievedAt ||
+                      ach.achieved_At;
+
+                    const photoUrl =
+                      ach.photoUrl ||
+                      ach.photo_Url;
+
+                    return (
+                      <details
+                        class="
+                          group
+                          border-b
+                          last:border-b-0
+                          border-[var(--color-border)]
+                          bg-[var(--color-bg)]
+                          open:bg-[rgba(230,57,70,0.02)]
+                        "
+                      >
+
+                        <summary
+                          class="
+                            list-none
+                            cursor-pointer
+                            p-4
+                            md:p-5
+                            hover:bg-[rgba(255,255,255,0.02)]
+                            transition-colors
+                          "
+                        >
+
+                          <div
+                            class="
+                              flex
+                              items-start
+                              gap-4
+                            "
+                          >
+
+                            <div
+                              class="
+                                hidden
+                                sm:flex
+                                shrink-0
+                                w-10
+                                h-10
+                                items-center
+                                justify-center
+                                border
+                                border-[var(--color-border)]
+                                text-[10px]
+                                text-[var(--color-red)]
+                              "
+                            >
+                              {String(index + 1).padStart(
+                                2,
+                                '0'
+                              )}
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+
+                              <div
+                                class="
+                                  flex
+                                  flex-wrap
+                                  items-center
+                                  gap-2
+                                  mb-1
+                                "
+                              >
+
+                                <h4
+                                  class="
+                                    text-[14px]
+                                    uppercase
+                                    font-bold
+                                    text-white
+                                    group-hover:text-[var(--color-red)]
+                                    transition-colors
+                                  "
+                                >
+                                  {ach.title}
+                                </h4>
+
+                                <span
+                                  class="
+                                    text-[8px]
+                                    border
+                                    border-[var(--color-border)]
+                                    px-1.5
+                                    py-0.5
+                                    text-[var(--color-muted)]
+                                  "
+                                >
+                                  LOG
+                                </span>
+
+                              </div>
+
+                              <div
+                                class="
+                                  flex
+                                  flex-wrap
+                                  gap-3
+                                  text-[9px]
+                                  uppercase
+                                  tracking-widest
+                                  text-[var(--color-muted)]
+                                "
+                              >
+
+                                <span>
+                                  {achievedAt
+                                    ? new Date(
+                                        achievedAt
+                                      ).toLocaleDateString(
+                                        'en-CA'
+                                      )
+                                    : 'UNKNOWN_DATE'}
+                                </span>
+
+                                {ach.slug && (
+                                  <span>
+                                    ID:
+                                    {ach.slug}
+                                  </span>
+                                )}
+
+                              </div>
+
+                            </div>
+
+                            <span
+                              class="
+                                text-[var(--color-red)]
+                                group-open:rotate-90
+                                transition-transform
+                              "
+                            >
+                              &gt;
+                            </span>
+
+                          </div>
+
+                        </summary>
+
+
+                        <div
+                          class="
+                            border-t
+                            border-[var(--color-border)]
+                            p-4
+                            md:p-5
+                            grid
+                            grid-cols-1
+                            md:grid-cols-[150px_1fr]
+                            gap-5
+                          "
+                        >
+
+                          {photoUrl && (
+                            <div
+                              class="
+                                aspect-video
+                                border
+                                border-[var(--color-border)]
+                                overflow-hidden
+                              "
+                            >
+                              <img
+                                src={
+                                  photoUrl.startsWith('/')
+                                    ? `${API_URL}${photoUrl}`
+                                    : photoUrl
+                                }
+                                alt={ach.title}
+                                class="
+                                  w-full
+                                  h-full
+                                  object-cover
+                                  grayscale
+                                  opacity-70
+                                  hover:grayscale-0
+                                  hover:opacity-100
+                                  transition-all
+                                "
+                              />
+                            </div>
+                          )}
+
+                          <div
+                            class="
+                              flex
+                              flex-col
+                              min-w-0
+                            "
+                          >
+
+                            <p
+                              class="
+                                text-[12px]
+                                leading-[1.8]
+                                text-[var(--color-muted)]
+                                whitespace-pre-wrap
+                                mb-5
+                              "
+                            >
+                              {ach.description}
+                            </p>
+
+                            <a
+                              href={`/achievement/${ach.slug}`}
+                              class="
+                                mt-auto
+                                self-start
+                                text-[10px]
+                                uppercase
+                                tracking-widest
+                                text-[var(--color-red)]
+                                hover:text-white
+                                transition-colors
+                              "
+                            >
+                              [ READ_FULL_LOG ] →
+                            </a>
+
+                          </div>
+
+                        </div>
+
+                      </details>
+                    );
+                  })}
+
+                </div>
+              )
+            }
+
+          </div>
+
+
+          <!-- CONTACT / SYSTEM -->
+
+          <aside
+            id="contact"
+            class="
+              bg-[rgba(255,255,255,0.01)]
+            "
+          >
+
+            <div
+              class="
+                border-b
+                border-[var(--color-border)]
+                px-4
+                py-3
+                md:px-6
+                text-[10px]
+                uppercase
+                tracking-[0.2em]
+              "
+            >
+              <span class="text-[var(--color-red)]">
+                05
+              </span>
+
+              <span class="mx-2 text-[var(--color-border)]">
+                //
+              </span>
+
+              communication
+            </div>
+
+
+            <div class="p-4 md:p-6">
+
+              <div
+                class="
+                  mb-5
+                  border
+                  border-[var(--color-border)]
+                  bg-black
+                  p-4
+                "
+              >
+
+                <div
+                  class="
+                    flex
+                    items-center
+                    gap-2
+                    mb-3
+                    text-[9px]
+                    uppercase
+                    tracking-widest
+                    text-[var(--color-muted)]
+                  "
+                >
+                  <span class="text-[var(--color-red)]">
+                    root@portfolio
+                  </span>
+
+                  <span>:</span>
+
+                  <span>~</span>
+
+                  <span>$</span>
+                </div>
+
+                <div
+                  class="
+                    text-[11px]
+                    leading-[1.8]
+                    text-white
+                  "
+                >
+                  establish_connection
+                  <span
+                    class="
+                      inline-block
+                      w-1.5
+                      h-3
+                      ml-1
+                      align-middle
+                      bg-[var(--color-red)]
+                      animate-blink
+                    "
+                  ></span>
+                </div>
+
+              </div>
+
+
+              {
+                contacts.length === 0 ? (
+                  <div
+                    class="
+                      text-[10px]
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    &gt; NO CONTACT LINKS FOUND.
+                  </div>
+                ) : (
+                  <div class="space-y-1">
+
+                    {contacts.map((c, index) => (
+                      <a
+                        href={c.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="
+                          group
+                          flex
+                          items-center
+                          gap-3
+                          border
+                          border-[var(--color-border)]
+                          bg-[var(--color-bg)]
+                          px-3
+                          py-3
+                          hover:border-[var(--color-red)]
+                          hover:bg-[rgba(230,57,70,0.05)]
+                          transition-all
+                        "
+                      >
+
+                        <span
+                          class="
+                            text-[9px]
+                            text-[var(--color-muted)]
+                            w-5
+                          "
+                        >
+                          {String(index + 1).padStart(
+                            2,
+                            '0'
+                          )}
+                        </span>
+
+                        <span
+                          class="
+                            flex-1
+                            text-[10px]
+                            uppercase
+                            tracking-widest
+                            text-white
+                            group-hover:text-[var(--color-red)]
+                            transition-colors
+                          "
+                        >
+                          {c.platform}
+                        </span>
+
+                        <span
+                          class="
+                            text-[var(--color-red)]
+                            group-hover:translate-x-1
+                            transition-transform
+                          "
+                        >
+                          →
+                        </span>
+
+                      </a>
+                    ))}
+
+                  </div>
+                )
+              }
+
+            </div>
+
+
+            <!-- SYSTEM FOOTPRINT -->
+
+            <div
+              class="
+                border-t
+                border-[var(--color-border)]
+                p-4
+                md:p-6
+              "
+            >
+
+              <div
+                class="
+                  text-[9px]
+                  uppercase
+                  tracking-[0.2em]
+                  text-[var(--color-muted)]
+                  mb-3
+                "
+              >
+                system_footprint
+              </div>
+
+              <div
+                class="
+                  grid
+                  grid-cols-2
+                  gap-px
+                  bg-[var(--color-border)]
+                  border
+                  border-[var(--color-border)]
+                "
+              >
+
+                <div class="bg-[var(--color-bg)] p-3">
+                  <div
+                    class="
+                      text-[8px]
+                      uppercase
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    uptime
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[11px]
+                      text-[#35d07f]
+                    "
+                  >
+                    99.9%
+                  </div>
+                </div>
+
+                <div class="bg-[var(--color-bg)] p-3">
+                  <div
+                    class="
+                      text-[8px]
+                      uppercase
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    api
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[11px]
+                      text-[#35d07f]
+                    "
+                  >
+                    connected
+                  </div>
+                </div>
+
+                <div class="bg-[var(--color-bg)] p-3">
+                  <div
+                    class="
+                      text-[8px]
+                      uppercase
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    auth
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[11px]
+                      text-[var(--color-red)]
+                    "
+                  >
+                    root
+                  </div>
+                </div>
+
+                <div class="bg-[var(--color-bg)] p-3">
+                  <div
+                    class="
+                      text-[8px]
+                      uppercase
+                      text-[var(--color-muted)]
+                    "
+                  >
+                    mode
+                  </div>
+
+                  <div
+                    class="
+                      mt-1
+                      text-[11px]
+                      text-white
+                    "
+                  >
+                    public
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </aside>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           FOOTER
+           ===================================================== -->
+
+      <footer
+        class="
+          px-4
+          py-4
+          md:px-6
+          bg-black
+          text-[9px]
+          uppercase
+          tracking-[0.16em]
+          text-[var(--color-muted)]
+        "
+      >
+
+        <div
+          class="
+            flex
+            flex-col
+            md:flex-row
+            items-center
+            justify-between
+            gap-3
+          "
+        >
+
+          <div>
+            <span class="text-[var(--color-red)]">
+              sys@portfolio
+            </span>
+
+            <span class="mx-2">
+              ::
+            </span>
+
+            all systems operational
+          </div>
+
+          <div>
+            terminal_interface // {new Date().getFullYear()}
+          </div>
+
+        </div>
+
+      </footer>
+
+    </main>
+
+
+    <!-- =====================================================
+         INTERACTION
+         ===================================================== -->
+
+    <script>
+      // -------------------------------------------------------
+      // LIVE CLOCK
+      // -------------------------------------------------------
+
+      const clock = document.getElementById(
+        'terminal-clock'
+      );
+
+      const updateClock = () => {
+        if (!clock) return;
+
+        const now = new Date();
+
+        clock.textContent = now.toLocaleTimeString(
+          'en-US',
+          {
+            hour12: false
+          }
+        );
+      };
+
+      updateClock();
+
+      setInterval(updateClock, 1000);
+
+
+      // -------------------------------------------------------
+      // PROJECT FILTER
+      // -------------------------------------------------------
+
+      const filterButtons =
+        document.querySelectorAll(
+          '.project-filter'
+        );
+
+      const projectCards =
+        document.querySelectorAll(
+          '[data-project-card]'
+        );
+
+      filterButtons.forEach((button) => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            const filter =
+              button.getAttribute(
+                'data-filter'
+              );
+
+            filterButtons.forEach((item) => {
+
+              item.classList.remove(
+                'bg-[var(--color-red)]',
+                'text-black',
+                'border-[var(--color-red)]'
+              );
+
+              item.classList.add(
+                'border-[var(--color-border)]'
+              );
+
+            });
+
+            button.classList.remove(
+              'border-[var(--color-border)]'
+            );
+
+            button.classList.add(
+              'bg-[var(--color-red)]',
+              'text-black',
+              'border-[var(--color-red)]'
+            );
+
+
+            projectCards.forEach((card) => {
+
+              const featured =
+                card.getAttribute(
+                  'data-featured'
+                );
+
+              if (
+                filter === 'all' ||
+                (filter === 'featured' &&
+                  featured === 'true')
+              ) {
+                card.classList.remove(
+                  'hidden'
+                );
+              } else {
+                card.classList.add(
+                  'hidden'
+                );
+              }
+
+            });
+
+          }
+        );
+
+      });
+    </script>
+
+  </body>
+</html>

@@ -50,6 +50,7 @@ builder.Services.AddScoped<TechStackServices>();
 builder.Services.AddScoped<ProjectServices>();
 builder.Services.AddScoped<SkillServices>();
 builder.Services.AddScoped<ContactServices>();
+builder.Services.AddScoped<AchievementServices>();
 var app = builder.Build();
 
 app.UseCors("AllowWebFrontend"); 
@@ -91,4 +92,5 @@ app.MapSkill();
 // Profile & Contact endpoints
 app.MapProfile();
 app.MapContact();
+app.MapAchievement();
 app.Run();

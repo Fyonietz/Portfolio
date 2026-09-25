@@ -65,10 +65,13 @@ CREATE TABLE IF NOT EXISTS Project_TechStack (
 );
 
 -- Achievements
+-- Achievements
 CREATE TABLE IF NOT EXISTS Achievement (
   Id INTEGER PRIMARY KEY AUTOINCREMENT,
   Title TEXT NOT NULL,
+  Slug TEXT NOT NULL UNIQUE,
   Description TEXT,
+  Photo_Url TEXT,
   Achieved_At TEXT,
   Sort_Order INTEGER NOT NULL DEFAULT 0
 );

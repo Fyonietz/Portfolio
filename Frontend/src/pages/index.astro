@@ -8,13 +8,15 @@ let profile = null;
 let contacts = [];
 let projects = [];
 let achievements = [];
-let skills = []; // Tambahan State Skill
+let skills = [];
+let techStacks = [];
 
 let errorProfile = false;
 let errorContacts = false;
 let errorProjects = false;
 let errorAchievements = false;
 let errorSkills = false;
+let errorTechStack = false;
 
 // ==============================================
 // 1. DATA FETCHING
@@ -56,6 +58,19 @@ try {
       .sort((a, b) => (a.sortOrder || a.sort_Order || 0) - (b.sortOrder || b.sort_Order || 0));
   } else if (res.status !== 404) errorSkills = true;
 } catch { errorSkills = true; }
+
+// 3b. Tech Stack
+try {
+  const res = await fetch(`${API_URL}/api/v1/tech-stack`);
+  if (res.ok) {
+    const data = await res.json();
+    techStacks = Array.isArray(data)
+      ? data
+          .filter((item) => item && (item.name || item.icon_Url || item.iconUrl))
+          .sort((a, b) => (a.sort_Order || a.sortOrder || 0) - (b.sort_Order || b.sortOrder || 0))
+      : [];
+  } else if (res.status !== 404) errorTechStack = true;
+} catch { errorTechStack = true; }
 
 // Kelompokkan skill berdasarkan kategori (otomatis membuat kolom)
 const skillsByCategory = skills.reduce((acc, skill) => {
@@ -107,139 +122,182 @@ try {
       <!-- ==============================================
            1. HERO & PROFILE COMBINED SECTION
            ============================================== -->
-      <section class="relative min-h-screen flex flex-col justify-center border-b border-[var(--color-border)] p-[2rem] lg:p-[4rem] bg-[var(--color-bg)] overflow-hidden">
-        
-        <div class="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(var(--color-white)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+      <section class="terminal-panel relative min-h-screen flex flex-col justify-center border-b border-[var(--color-border)] p-[1.25rem] md:p-[2rem] lg:p-[3rem] overflow-hidden">
+        <div class="absolute inset-0 micro-grid opacity-60 pointer-events-none"></div>
+        <div class="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(230,57,70,0.65),transparent)]"></div>
+        <div class="absolute -left-16 top-10 h-52 w-52 rounded-full bg-[rgba(230,57,70,0.08)] blur-3xl"></div>
+        <div class="absolute right-0 bottom-0 h-80 w-80 rounded-full bg-[rgba(230,57,70,0.06)] blur-3xl"></div>
 
-        <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col gap-8">
-          
-          <div class="flex justify-between items-center text-[11px] text-[var(--color-muted)] border-b border-[var(--color-border)] pb-3">
-            <div><span class="text-[var(--color-red)]">sys@terminal:~#</span> ./initialize_portfolio.sh</div>
-            <div class="hidden md:block">STATUS: <span class="text-[var(--color-white)] font-bold">{profile?.status || 'ONLINE'}</span></div>
+        <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col gap-6">
+          <div class="terminal-header">
+            <div class="flex items-center gap-3">
+              <div class="terminal-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <div><span class="text-[var(--color-red)]">sys@portfolio</span>:/workspace/landing</div>
+            </div>
+            <div class="hidden md:flex items-center gap-2">
+              <span class="status-flash inline-block w-2 h-2 rounded-full bg-[var(--color-red)]"></span>
+              <span>{profile?.status || 'ONLINE'}</span>
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-12 items-center">
-            
-            <!-- KOLOM KIRI: FOTO PROFIL -->
+          <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 lg:gap-12 items-center">
             <div class="relative group">
-              <div class="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-[var(--color-red)] z-10"></div>
-              <div class="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-[var(--color-red)] z-10"></div>
-              
-              <div class="border border-[var(--color-border)] bg-[var(--color-surface)] p-3 rounded-[2px] shadow-2xl">
+              <div class="signal-badge">live</div>
+              <div class="profile-stage terminal-glow">
                 {pPhoto ? (
-                  <img 
-                    src={pPhoto.startsWith('/') ? `${API_URL}${pPhoto}` : pPhoto} 
-                    alt={profile.name || 'Profile'} 
-                    class="w-full aspect-square object-cover rounded-[1px] grayscale contrast-125 group-hover:grayscale-0 transition-all duration-500" 
+                  <img
+                    src={pPhoto.startsWith('/') ? `${API_URL}${pPhoto}` : pPhoto}
+                    alt={profile?.name || 'Profile'}
+                    class="profile-image w-full aspect-square object-cover border border-[var(--color-border)]"
                   />
                 ) : (
                   <div class="w-full aspect-square bg-[var(--color-bg)] flex items-center justify-center text-[var(--color-muted)] text-[11px] border border-[var(--color-border)]">
                     [NO_IMAGE_DATA]
                   </div>
                 )}
-                <div class="mt-3 text-center text-[10px] text-[var(--color-muted)] tracking-widest uppercase">
-                  SYS_ID: #{profile?.id || '01'} // SECURE
-                </div>
               </div>
+
+              <div class="floating-tag tag-one">{pRole || 'PROFILE'}</div>
+              <div class="floating-tag tag-two">{skills.length || 0} skills</div>
+              <div class="floating-tag tag-three">{projects.length || 0} projects</div>
             </div>
 
-            <!-- KOLOM KANAN: NAMA, ROLE, BIO, DAN CTA -->
             <div class="flex flex-col justify-center">
-              <div class="text-[var(--color-muted)] text-[12px] mb-3 flex items-center gap-2">
+              <div class="text-[var(--color-muted)] text-[12px] mb-3 flex items-center gap-2 uppercase tracking-[0.25em]">
                 <span class="text-[var(--color-red)]">></span> user_authenticated: <span class="text-[var(--color-white)] font-bold">root</span>
               </div>
-              
+
               <h1 class="text-[32px] md:text-[52px] tracking-[3px] uppercase mb-3 flex items-center leading-none font-bold text-[var(--color-white)]">
                 {profile ? profile.name : 'GUEST'}
                 <span class="inline-block w-[14px] h-[36px] md:h-[44px] bg-[var(--color-red)] ml-3 animate-blink"></span>
               </h1>
-              
-              <div class="text-[var(--color-red)] text-[15px] md:text-[17px] mb-6 uppercase tracking-[3px] font-bold">
-                {pRole || 'LOW LEVEL PROGRAMMER'}
+
+              <div class="flex items-center gap-3 mb-5">
+                <span class="terminal-chip inline-flex items-center px-2.5 py-1.5 text-[10px] uppercase tracking-[0.2em] rounded-sm">
+                  role // {pRole || 'PROFILE'}
+                </span>
               </div>
-              
-              <div class="border-l-2 border-[var(--color-red)] pl-4 py-1 mb-8">
+
+              <div class="border-l-2 border-[var(--color-red)] pl-4 py-1 mb-7">
                 <p class="text-[var(--color-white)] text-[14px] md:text-[15px] leading-[1.8] font-normal">
-                  {pDesc || pBio || 'System architecture enthusiast focusing on low-level systems, memory management, and hardware optimization.'}
+                  {pDesc || pBio || 'Portfolio data is currently unavailable.'}
                 </p>
               </div>
 
-              <div class="flex flex-wrap items-center gap-4">
+              <div class="flex flex-wrap items-center gap-4 mb-8">
                 <a href="#projects" class="border border-[var(--color-red)] bg-[var(--color-red)] text-black px-[22px] py-[11px] text-[13px] rounded-[2px] hover:bg-transparent hover:text-[var(--color-red)] transition-all uppercase leading-[1] font-bold tracking-wider shadow-[0_0_20px_rgba(230,57,70,0.25)]">
                   ./view_projects
                 </a>
-                <a href="#contact" class="border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-white)] px-[22px] py-[11px] text-[13px] rounded-[2px] hover:border-[var(--color-white)] hover:bg-[#1a1a1a] transition-all uppercase leading-[1] tracking-wider">
+                <a href="#contact" class="terminal-link px-[22px] py-[11px] text-[13px] rounded-[2px] uppercase leading-[1] tracking-wider">
                   ./contact
                 </a>
               </div>
-            </div>
 
+              <div class="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
+                <span>stack:</span>
+                {techStacks.length > 0 ? techStacks.slice(0, 6).map((stack) => (
+                  <span class="border border-[var(--color-border)] px-2 py-1">{stack.name}</span>
+                )) : (
+                  <span class="border border-[var(--color-border)] px-2 py-1">[no stack data]</span>
+                )}
+              </div>
+            </div>
           </div>
 
-          <!-- CONNECTIONS -->
-          {contacts.length > 0 && (
-            <div class="pt-6 border-t border-[var(--color-border)] flex flex-wrap items-center gap-3">
-              <span class="text-[var(--color-muted)] text-[11px] uppercase tracking-wider mr-2">CONNECTIONS:</span>
-              {contacts.map((c) => (
-                <a 
-                  href={c.value} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-white)] hover:text-[var(--color-red)] hover:border-[var(--color-red)] px-3 py-1.5 text-[11px] rounded-[1px] uppercase tracking-wider transition-colors flex items-center gap-2"
-                >
-                  <span class="w-1.5 h-1.5 bg-[var(--color-red)] rounded-full"></span>
-                  {c.platform}
-                </a>
-              ))}
-            </div>
-          )}
-
+          <div class="supportive-note rounded-[2px] p-4 md:p-5 text-[12px] md:text-[13px] text-[var(--color-white)] leading-[1.8]">
+            <p>{pBio || pDesc || 'Data synced from the API.'}</p>
+          </div>
         </div>
       </section>
 
 <!-- ==============================================
            2. SKILLS SECTION (DYNAMIC FROM API)
            ============================================== -->
-      <section class="min-h-screen flex flex-col justify-center border-b border-[var(--color-border)] p-[2rem] bg-[var(--color-surface)]">
+      <section id="skills" class="capability-shell min-h-[68vh] flex flex-col justify-center border-b border-[var(--color-border)] p-[1.5rem] md:p-[2rem]">
         <div class="text-[var(--color-red)] text-[11px] uppercase tracking-[2px] mb-8">// SYSTEM CAPABILITIES</div>
-        
-        {errorSkills || skills.length === 0 ? (
-          <div class="text-[var(--color-muted)] p-[1.75rem] border border-[var(--color-border)] text-center">
-            > KERNEL PANIC: NO CAPABILITIES FOUND.
-          </div>
-        ) : (
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[48px] gap-y-[40px]">
-            {Object.keys(skillsByCategory).map((categoryName) => (
-              <div>
-                <div class="text-[var(--color-muted)] mb-5 border-b border-[var(--color-border)] pb-2 tracking-widest text-[11px] leading-[1] uppercase">
-                  {categoryName}
-                </div>
-                <div class="flex flex-col gap-6">
-                  {skillsByCategory[categoryName].map(skill => (
-                    <div class="flex flex-col gap-1.5">
-                      <div class="flex justify-between items-end text-[11px] uppercase leading-[1]">
-                        <span class="text-[var(--color-white)] font-bold">{skill.name}</span>
-                        <span class="text-[var(--color-red)]">{skill.level}%</span>
-                      </div>
-                      
-                      <div class="h-[3px] w-full bg-[var(--color-bg)] border border-[var(--color-border)]">
-                        <div class="h-full bg-[var(--color-red)]" style={`width: ${skill.level}%;`}></div>
-                      </div>
-                      
-                      <!-- TAMBAHAN: Deskripsi Skill -->
-                      {skill.description && (
-                        <div class="text-[var(--color-muted)] text-[11px] leading-[1.6] mt-1 border-l-2 border-[var(--color-border)] pl-2.5">
-                          {skill.description}
-                        </div>
-                      )}
-                      
+
+        <div class="capability-grid">
+          <div class="terminal-panel-card">
+            <div class="terminal-card-header">
+              <span class="title">Skills</span>
+            </div>
+
+            {errorSkills || skills.length === 0 ? (
+              <div class="text-[var(--color-muted)] text-[12px]">> NO SKILLS DATA FOUND.</div>
+            ) : (
+              <div class="skill-list">
+                {skills.slice(0, 3).map((skill) => (
+                  <div class="skill-item">
+                    <div class="skill-meta">
+                      <div class="skill-name">{skill.name}</div>
+                      {skill.level !== undefined && <div class="skill-level">{skill.level}%</div>}
                     </div>
-                  ))}
-                </div>
+                    <div class="skill-bar">
+                      <span style={`width: ${skill.level || 0}%`}></span>
+                    </div>
+                    {skill.description && <div class="skill-desc">{skill.description}</div>}
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
+
+          <div class="terminal-panel-card">
+            <div class="terminal-card-header">
+              <span class="title">Tech Stack</span>
+            </div>
+
+            {errorTechStack || techStacks.length === 0 ? (
+              <div class="text-[var(--color-muted)] text-[12px]">> NO STACK DATA FOUND.</div>
+            ) : (
+              <div class="tech-grid">
+                {techStacks.slice(0, 4).map((stack) => {
+                  const iconUrl = stack.icon_Url || stack.iconUrl;
+                  return (
+                    <div class="tech-item">
+                      {iconUrl ? (
+                        <img
+                          src={iconUrl.startsWith('/') ? `${API_URL}${iconUrl}` : iconUrl}
+                          alt={stack.name}
+                          class="object-contain grayscale"
+                        />
+                      ) : (
+                        <div class="w-8 h-8 border border-[var(--color-border)] flex items-center justify-center text-[10px] text-[var(--color-muted)]">{stack.name.slice(0, 2).toUpperCase()}</div>
+                      )}
+                      <div class="label">{stack.name}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div id="contact" class="terminal-panel-card">
+            <div class="terminal-card-header">
+              <span class="title">Contact</span>
+            </div>
+
+            {contacts.length === 0 ? (
+              <div class="text-[var(--color-muted)] text-[12px]">> NO CONTACT LINKS FOUND.</div>
+            ) : (
+              <div class="contact-list">
+                {contacts.map((c) => (
+                  <a
+                    href={c.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="contact-link"
+                  >
+                    <span>{c.platform}</span>
+                    <span class="arrow">›</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </section>
 
       <!-- ==============================================

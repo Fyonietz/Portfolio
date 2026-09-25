@@ -45,7 +45,11 @@ builder.Services.AddScoped<IJWTService, JWTService>();
 
 //CRUD Services Registration
 builder.Services.AddScoped<AuthServices>();
+builder.Services.AddScoped<ProfileServices>();
+builder.Services.AddScoped<TechStackServices>();
 builder.Services.AddScoped<ProjectServices>();
+builder.Services.AddScoped<SkillServices>();
+builder.Services.AddScoped<ContactServices>();
 var app = builder.Build();
 
 app.UseCors("AllowWebFrontend"); 
@@ -82,6 +86,8 @@ app.MapAuth();
 
 //Project
 app.MapProject();
+app.MapTechStack();
+app.MapSkill();
 // Profile & Contact endpoints
 app.MapProfile();
 app.MapContact();

@@ -1,17 +1,18 @@
+
 using Backend.Models;
 using Backend.Services;
 
 namespace Backend.Controllers
 {
-    public static class ProfileController
+    public static class TechStackController
     {
-        public static void MapProfile(this WebApplication app)
+        public static void MapTechStack(this WebApplication app)
         {
-            var g = app.MapGroup("api/v1/profile")
+            var g = app.MapGroup("api/v1/tech-stack")
                        .DisableAntiforgery();
 
             // GET ALL
-            g.MapGet("/", async (ProfileServices svc) =>
+            g.MapGet("/", async (TechStackServices svc) =>
             {
                 try
                 {
@@ -25,7 +26,7 @@ namespace Backend.Controllers
             });
 
             // GET BY ID
-            g.MapGet("/{id}", async (ProfileServices svc, int id) =>
+            g.MapGet("/{id}", async (TechStackServices svc, int id) =>
             {
                 try
                 {
@@ -42,35 +43,37 @@ namespace Backend.Controllers
             });
 
             // POST
-            g.MapPost("/", async (ProfileServices svc, HttpRequest request) =>
+            g.MapPost("/", async (
+                TechStackServices svc,
+                HttpRequest request) =>
             {
                 try
                 {
                     var form = await request.ReadFormAsync();
 
-                    var photo = form.Files.Count > 0
-                        ? await svc.SavePhoto(form.Files[0])
+                    var icon = form.Files.Count > 0
+                        ? await svc.SaveIcon(form.Files[0])
                         : null;
 
-                    var profile = new Profile
+                    var techStack = new TechStack
                     {
                         Name = form["Name"].ToString(),
-                        Role_Title = form["Role_Title"].ToString(),
-                        Description = form["Description"].ToString(),
-                        Photo_Url = photo,
-                        Status = form["Status"].ToString(),
-                        Bio = form["Bio"].ToString()
+                        Icon_Url = icon,
+                        Sort_Order = int.TryParse(
+                            form["Sort_Order"],
+                            out var sortOrder)
+                                ? sortOrder
+                                : 0
                     };
 
-                    var result = await svc.Create(profile);
+                    var result = await svc.Create(techStack);
 
-                    if (!result)
-                        return Results.Problem("Failed to create profile.");
-
-                    return Results.Created(
-                        $"/api/v1/profile/{profile.Id}",
-                        profile
-                    );
+                    return result
+                        ? Results.Created(
+                            $"/api/v1/tech-stack/{techStack.Id}",
+                            techStack)
+                        : Results.Problem(
+                            "Failed to create tech stack.");
                 }
                 catch (Exception ex)
                 {
@@ -80,7 +83,7 @@ namespace Backend.Controllers
 
             // PUT
             g.MapPut("/{id}", async (
-                ProfileServices svc,
+                TechStackServices svc,
                 HttpRequest request,
                 int id) =>
             {
@@ -93,25 +96,27 @@ namespace Backend.Controllers
 
                     var form = await request.ReadFormAsync();
 
-                    var photo = form.Files.Count > 0
-                        ? await svc.SavePhoto(form.Files[0])
-                        : existing.Photo_Url;
+                    var icon = form.Files.Count > 0
+                        ? await svc.SaveIcon(form.Files[0])
+                        : existing.Icon_Url;
 
-                    var profile = new Profile
+                    var techStack = new TechStack
                     {
                         Id = id,
                         Name = form["Name"].ToString(),
-                        Role_Title = form["Role_Title"].ToString(),
-                        Description = form["Description"].ToString(),
-                        Photo_Url = photo,
-                        Status = form["Status"].ToString(),
-                        Bio = form["Bio"].ToString()
+                        Icon_Url = icon,
+                        Sort_Order = int.TryParse(
+                            form["Sort_Order"],
+                            out var sortOrder)
+                                ? sortOrder
+                                : existing.Sort_Order
                     };
 
-                    var result = await svc.Update(id, profile);
+                    var result = await svc.Update(id, techStack);
 
                     if (!result)
-                        return Results.Problem("Failed to update profile.");
+                        return Results.Problem(
+                            "Failed to update tech stack.");
 
                     var updated = await svc.GetById(id);
 
@@ -125,7 +130,7 @@ namespace Backend.Controllers
 
             // DELETE
             g.MapDelete("/{id}", async (
-                ProfileServices svc,
+                TechStackServices svc,
                 int id) =>
             {
                 try
@@ -139,7 +144,8 @@ namespace Backend.Controllers
 
                     return result
                         ? Results.NoContent()
-                        : Results.Problem("Failed to delete profile.");
+                        : Results.Problem(
+                            "Failed to delete tech stack.");
                 }
                 catch (Exception ex)
                 {

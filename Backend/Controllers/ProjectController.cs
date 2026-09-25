@@ -59,18 +59,25 @@ namespace Backend.Controllers
                     var form   = await request.ReadFormAsync();
                     var photos = await svc.SavePhotos(form.Files);
 
-                    var project = new Project
+                    // parse TechStack_Ids dari form: "1,2,3"
+                    var techIds = form["TechStack_Ids"].ToString()
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => int.TryParse(x.Trim(), out var n) ? n : 0)
+                        .Where(x => x > 0)
+                        .ToList();
+
+                    var project = new ProjectRequest
                     {
                         Title             = form["Title"].ToString(),
                         Slug              = form["Slug"].ToString(),
                         Short_Description = form["Short_Description"].ToString(),
                         Full_Description  = form["Full_Description"].ToString(),
                         Photos            = photos,
-                        Tech_Stack        = form["Tech_Stack"].ToString(),
                         Repo_Url          = form["Repo_Url"].ToString(),
                         Demo_Url          = form["Demo_Url"].ToString(),
                         Sort_Order        = int.TryParse(form["Sort_Order"], out var s) ? s : 0,
                         Published         = bool.TryParse(form["Published"], out var p) && p,
+                        TechStack_Ids     = techIds,
                     };
 
                     var result = await svc.Create(project);
@@ -97,18 +104,24 @@ namespace Backend.Controllers
                         ? await svc.SavePhotos(form.Files)
                         : existing.Photos;
 
-                    var project = new Project
+                    var techIds = form["TechStack_Ids"].ToString()
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => int.TryParse(x.Trim(), out var n) ? n : 0)
+                        .Where(x => x > 0)
+                        .ToList();
+
+                    var project = new ProjectRequest
                     {
                         Title             = form["Title"].ToString(),
                         Slug              = form["Slug"].ToString(),
                         Short_Description = form["Short_Description"].ToString(),
                         Full_Description  = form["Full_Description"].ToString(),
                         Photos            = photos,
-                        Tech_Stack        = form["Tech_Stack"].ToString(),
                         Repo_Url          = form["Repo_Url"].ToString(),
                         Demo_Url          = form["Demo_Url"].ToString(),
                         Sort_Order        = int.TryParse(form["Sort_Order"], out var s) ? s : 0,
                         Published         = bool.TryParse(form["Published"], out var p) && p,
+                        TechStack_Ids     = techIds,
                     };
 
                     var result = await svc.Update(id, project);

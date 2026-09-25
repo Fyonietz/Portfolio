@@ -3,13 +3,13 @@ using Backend.Models;
 
 namespace Backend.Controllers
 {
-    public static class ContactController
+    public static class AchievementController
     {
-        public static void MapContact(this WebApplication app)
+        public static void MapAchievement(this WebApplication app)
         {
-            var g = app.MapGroup("api/v1/contact").DisableAntiforgery();
+            var g = app.MapGroup("api/v1/achievement").DisableAntiforgery();
 
-            g.MapGet("/", async (ContactServices svc) =>
+            g.MapGet("/", async (AchievementServices svc) =>
             {
                 try
                 {
@@ -18,7 +18,7 @@ namespace Backend.Controllers
                 catch (Exception ex) { return Results.Problem(ex.Message); }
             });
 
-            g.MapGet("/{id}", async (ContactServices svc, int id) =>
+            g.MapGet("/{id}", async (AchievementServices svc, int id) =>
             {
                 try
                 {
@@ -28,19 +28,19 @@ namespace Backend.Controllers
                 catch (Exception ex) { return Results.Problem(ex.Message); }
             });
 
-            g.MapPost("/", async (ContactServices svc, Contact data) =>
+            g.MapPost("/", async (AchievementServices svc, Achievement data) =>
             {
                 try
                 {
                     var result = await svc.Create(data);
                     return result
-                        ? Results.Created("/api/v1/contact", data)
+                        ? Results.Created("/api/v1/achievement", data)
                         : Results.Problem("Failed to create.");
                 }
                 catch (Exception ex) { return Results.Problem(ex.Message); }
             }).RequireAuthorization(Policies.Admin);
 
-            g.MapPut("/{id}", async (ContactServices svc, int id, Contact data) =>
+            g.MapPut("/{id}", async (AchievementServices svc, int id, Achievement data) =>
             {
                 try
                 {
@@ -54,7 +54,7 @@ namespace Backend.Controllers
                 catch (Exception ex) { return Results.Problem(ex.Message); }
             }).RequireAuthorization(Policies.Admin);
 
-            g.MapDelete("/{id}", async (ContactServices svc, int id) =>
+            g.MapDelete("/{id}", async (AchievementServices svc, int id) =>
             {
                 try
                 {

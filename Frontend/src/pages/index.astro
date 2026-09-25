@@ -154,6 +154,24 @@ const totalProjects = projects.length;
 const totalSkills = skills.length;
 const totalTech = techStacks.length;
 const totalAchievements = achievements.length;
+
+// =====================================================
+// IMAGE URL HELPERS
+// =====================================================
+
+// Helper untuk Profil
+const getProfileImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return url.startsWith('/') ? `${API_URL}${url}` : `${API_URL}/uploads/profile/${url}`;
+};
+
+// Helper untuk Tech Stack (karena tech stack juga punya gambar/icon)
+const getStackImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return url.startsWith('/') ? `${API_URL}${url}` : `${API_URL}/uploads/tech-stack/${url}`;
+};
 ---
 
 <html lang="en">

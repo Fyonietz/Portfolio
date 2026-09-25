@@ -34,7 +34,11 @@ const aPhotoUrl = ach?.photoUrl || ach?.photo_Url;
 const aSortOrder = ach?.sortOrder || ach?.sort_Order || 0;
 
 // Menambahkan pengecekan (url && ...) agar tidak error 'startsWith of undefined' jika aPhotoUrl null
-const getImageUrl = (url) => (url && url.startsWith('/')) ? `${API_URL}${url}` : url;
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return url.startsWith('/') ? `${API_URL}${url}` : `${API_URL}/uploads/profile/${url}`;
+};
 ---
 
 <html lang="en">

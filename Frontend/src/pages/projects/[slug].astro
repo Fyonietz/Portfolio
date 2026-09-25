@@ -41,7 +41,11 @@ const pPublished = project?.published;
 const pSortOrder = project?.sortOrder || project?.sort_Order || 0;
 
 // Menambahkan url && agar aman dari error undefined jika project tidak ada gambar
-const getImageUrl = (url) => (url && url.startsWith('/')) ? `${API_URL}${url}` : url;
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return url.startsWith('/') ? `${API_URL}${url}` : `${API_URL}/uploads/profile/${url}`;
+};
 ---
 
 <html lang="en">
